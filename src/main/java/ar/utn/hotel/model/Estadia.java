@@ -1,4 +1,4 @@
-package ar.mihotel;
+package ar.utn.hotel.model;
 import java.util.Date;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,9 +8,10 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class detalle_reserva {
-    private int id_detalle_reserva;
+public class Estadia {
+    private int id_estadia;
     private Date fecha_inicio;
     private Date fecha_fin;
-    private int descuento;
+    private Date hora_check_in;
+    private Date hora_check_out;
 }

@@ -1,4 +1,4 @@
-package ar.mihotel;
+package ar.utn.hotel.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -7,9 +7,8 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class Persona {
-    private int id_Persona;
+public class Consumo {
+    private int id_consumo;
     private String nombre;
-    private String apellido;
-    private int telefono;
+    private double costo;
 }

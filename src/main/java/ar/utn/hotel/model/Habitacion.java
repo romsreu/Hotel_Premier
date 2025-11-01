@@ -1,6 +1,4 @@
-package ar.mihotel;
-
-import java.util.Date;
+package ar.utn.hotel.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -9,8 +7,9 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class Nota_Credito {
-    private int id_nota_credito;
+public class Habitacion {
+    private int id_habitacion;
     private int numero;
-    private Date fecha;
+    private int piso;
+    private int idTipoHabitacion;
 }

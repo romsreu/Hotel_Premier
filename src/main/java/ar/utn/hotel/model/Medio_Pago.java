@@ -1,4 +1,4 @@
-package ar.mihotel;
+package ar.utn.hotel.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -7,8 +7,6 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class Tarjeta_Debito {
+public class Medio_Pago {
     private int id_medio_pago;
-    private String marca;
-    private String banco_emisor;
 }

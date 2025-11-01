@@ -1,4 +1,4 @@
-package ar.mihotel;
+package ar.utn.hotel.model;
 
 import java.util.Date;
 import lombok.Data;
