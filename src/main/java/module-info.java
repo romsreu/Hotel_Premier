@@ -6,5 +6,8 @@ module ar.utn.hotel.hotel_premier {
     requires org.kordamp.ikonli.javafx;
 
     opens ar.utn.hotel.hotel_premier to javafx.fxml;
+    opens controllers to javafx.fxml;
+
     exports ar.utn.hotel.hotel_premier;
+    exports controllers;
 }
