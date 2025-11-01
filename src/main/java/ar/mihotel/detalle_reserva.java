@@ -1,5 +1,12 @@
 package ar.mihotel;
 import java.util.Date;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 
 public class detalle_reserva {
     private int id_detalle_reserva;

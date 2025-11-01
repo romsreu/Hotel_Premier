@@ -1,4 +1,5 @@
 package ar.mihotel;
+
 import java.util.Date;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,9 +9,11 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class Reserva {
-    private int id;
-    private Date fecha_inicio;
-    private Date fecha_fin;
-    private int cant_huespedes;
+public class Pago {
+    private int id_pago;
+    private String moneda;
+    private int numero;
+    private Date fecha;
+    private double monto;
+    private double cotizacion;
 }
