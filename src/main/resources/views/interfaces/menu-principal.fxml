@@ -1,14 +1,96 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="$CONTROLLER_NAME$"
-            prefHeight="400.0" prefWidth="600.0" >
 
+<AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="950.0" stylesheets="@../../styles/menu-principal.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MenuPrincipalController">
+   <children>
+      <Line endX="280.0" endY="532.0" startX="280.0" startY="5.086263172415784E-6" />
+      <Pane prefHeight="532.0" prefWidth="280.0" AnchorPane.bottomAnchor="68.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="670.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Text layoutX="16.0" layoutY="69.0" strokeType="OUTSIDE" strokeWidth="0.0" text="HOTEL PREMIER" textAlignment="CENTER" wrappingWidth="248.0">
+               <font>
+                  <Font name="Lucida Bright" size="50.0" />
+               </font>
+            </Text>
+            <VBox layoutX="9.0" layoutY="174.0" prefHeight="323.0" prefWidth="253.0" styleClass="vbox-menu">
+               <children>
+                  <MenuButton mnemonicParsing="false" prefHeight="51.0" prefWidth="245.0" text="Habitaciones y Reservas">
+                    <items>
+                      <MenuItem mnemonicParsing="false" text="Action 1" />
+                      <MenuItem mnemonicParsing="false" text="Action 2" />
+                    </items>
+                     <font>
+                        <Font name="Lucida Bright" size="17.0" />
+                     </font>
+                  </MenuButton>
+                  <MenuButton mnemonicParsing="false" prefHeight="51.0" prefWidth="245.0" text="Gestión de Huéspedes">
+                     <items>
+                        <MenuItem mnemonicParsing="false" text="Action 1" />
+                        <MenuItem mnemonicParsing="false" text="Action 2" />
+                     </items>
+                     <font>
+                        <Font name="Lucida Bright" size="17.0" />
+                     </font>
+                  </MenuButton>
+                  <MenuButton mnemonicParsing="false" prefHeight="51.0" prefWidth="245.0" text="Responsables de Pago">
+                     <items>
+                        <MenuItem mnemonicParsing="false" text="Action 1" />
+                        <MenuItem mnemonicParsing="false" text="Action 2" />
+                     </items>
+                     <font>
+                        <Font name="Lucida Bright" size="17.0" />
+                     </font>
+                  </MenuButton>
+                  <MenuButton mnemonicParsing="false" prefHeight="51.0" prefWidth="245.0" text="Facturación y Pagos">
+                     <items>
+                        <MenuItem mnemonicParsing="false" text="Action 1" />
+                        <MenuItem mnemonicParsing="false" text="Action 2" />
+                     </items>
+                     <font>
+                        <Font name="Lucida Bright" size="17.0" />
+                     </font>
+                  </MenuButton>
+                  <MenuButton mnemonicParsing="false" prefHeight="51.0" prefWidth="245.0" text="Listados">
+                     <items>
+                        <MenuItem mnemonicParsing="false" text="Action 1" />
+                        <MenuItem mnemonicParsing="false" text="Action 2" />
+                     </items>
+                     <font>
+                        <Font name="Lucida Bright" size="17.0" />
+                     </font>
+                  </MenuButton>
+               </children>
+            </VBox>
+         </children>
+      </Pane>
+      <Pane layoutX="154.0" layoutY="522.0" prefHeight="68.0" prefWidth="810.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+         <children>
+            <Text layoutX="14.0" layoutY="41.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Estado del sistema - Estable" wrappingWidth="392.13671875">
+               <font>
+                  <Font name="Lucida Bright" size="17.0" />
+               </font>
+            </Text>
+            <Text layoutX="756.0" layoutY="42.0" strokeType="OUTSIDE" strokeWidth="0.0" text="07/11/2025" wrappingWidth="114.0">
+               <font>
+                  <Font name="Lucida Bright" size="17.0" />
+               </font>
+            </Text>
+            <Text layoutX="878.0" layoutY="42.0" strokeType="OUTSIDE" strokeWidth="0.0" text="21:30" wrappingWidth="62.0">
+               <font>
+                  <Font name="Lucida Bright" size="17.0" />
+               </font>
+            </Text>
+            <Line endX="869.0" endY="47.5859375" layoutX="-2.0" layoutY="1.0" startX="869.0" startY="20.0" />
+            <Line endX="950.0" startX="-100.0" />
+         </children>
+      </Pane>
+   </children>
 </AnchorPane>

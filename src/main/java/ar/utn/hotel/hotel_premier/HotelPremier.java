@@ -10,7 +10,7 @@ public class HotelPremier extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        URL fxmlUrl = getClass().getResource("/views/dar-alta-huesped.fxml");
+        URL fxmlUrl = getClass().getResource("/views/interfaces/dar-alta-huesped.fxml");
         System.out.println("FXML URL: " + fxmlUrl);
 
         if (fxmlUrl == null) {
