@@ -1,10 +1,10 @@
 package controllers;
 
+import enums.PopUpType;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
+import static controllers.PopUpController.mostrarPopUp;
 import static utils.TextManager.*;
 
 import java.net.URI;
@@ -39,8 +39,6 @@ public class DarAltaHuespedController {
     @FXML private Button btnCancelar;
     @FXML private Button btnSiguiente;
 
-    @FXML private ImageView imgFondo;
-    @FXML private Pane vinietaFondo;
 
     // === CLIENTE HTTP (se reutiliza para todas las llamadas) ===
     private final HttpClient http = HttpClient.newHttpClient();
@@ -190,6 +188,7 @@ public class DarAltaHuespedController {
         String piso = txtPiso.getText();
         String codPostal = txtCodigoPostal.getText();
         String cuit = txtCuit.getText();
+        mostrarPopUp(PopUpType.SUCCESS, "El email ingresado no es válido.");
 
         System.out.println("========================================");
         System.out.println("          DATOS DEL HUÉSPED");
