@@ -1,16 +1,20 @@
 package controllers;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.scene.effect.GaussianBlur;
-import javafx.scene.effect.InnerShadow;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.RadialGradient;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.Stop;
+import static utils.TextManager.*;
 
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DarAltaHuespedController {
 
@@ -21,15 +25,15 @@ public class DarAltaHuespedController {
     @FXML private TextField txtCuit;
     @FXML private ComboBox<String> combPosicionIva;
     @FXML private TextField txtNumDoc;
-    @FXML private TextField txtLocalidad;
     @FXML private TextField txtCalle;
-    @FXML private TextField txtNumero;
+    @FXML private TextField txtNumeroCalle;
     @FXML private TextField txtDepto;
     @FXML private TextField txtPiso;
     @FXML private TextField txtCodigoPostal;
-    @FXML private TextField txtProvincia;
     @FXML private DatePicker dateNacimiento;
     @FXML private ComboBox<String> comboNacionalidad;
+    @FXML private ComboBox<String> comboLocalidad;
+    @FXML private ComboBox<String> comboProvincia;
     @FXML private ComboBox<String> comboTipoDoc;
     @FXML private ComboBox<String> comboPais;
     @FXML private Button btnCancelar;
@@ -38,71 +42,171 @@ public class DarAltaHuespedController {
     @FXML private ImageView imgFondo;
     @FXML private Pane vinietaFondo;
 
+    // === CLIENTE HTTP (se reutiliza para todas las llamadas) ===
+    private final HttpClient http = HttpClient.newHttpClient();
 
     @FXML
     public void initialize() {
 
-        //Efectos por código, porque no soporta blur() en el inspector (fail)
-
-        imgFondo.setEffect(null);
-        GaussianBlur blur = new GaussianBlur(20);
-
-        InnerShadow inner = new InnerShadow();
-        inner.setColor(Color.rgb(0, 0, 0, 0.8)); // negro 80% opacidad
-        inner.setRadius(250);
-        inner.setChoke(0.30);
-
-        inner.setInput(blur);
-        imgFondo.setEffect(inner);
-
-        RadialGradient radial = new RadialGradient(
-                0, 0,
-                0.5, 0.5,
-                1.2, true,
-                CycleMethod.NO_CYCLE,
-                new Stop(0.5, Color.rgb(0, 0, 0, 0.35)),
-                new Stop(0.8, Color.rgb(0, 0, 0, 0.6))
-        );
-        vinietaFondo.setBackground(
-                new javafx.scene.layout.Background(
-                        new javafx.scene.layout.BackgroundFill(radial, null, null)
-                )
-        );
+        aplicarMayusculas(txtNombre,txtApellido,txtCalle, txtOcupacion, txtEmail);
+        aplicarMascaraDNI(txtNumDoc);
+        cargarProvincias();
 
 
-        comboNacionalidad.getItems().addAll(
-                "Argentina", "Uruguaya", "Chilena", "Paraguaya", "Brasileña", "Otra"
-        );
+        comboProvincia.setOnAction(e -> {
+            String prov = comboProvincia.getValue();
+            if (prov != null && !prov.isBlank()) {
+                cargarLocalidades(prov);
+            }
+        });
 
-        comboTipoDoc.getItems().addAll(
-                "DNI", "Pasaporte", "Cédula", "Otro"
-        );
-
-        comboPais.getItems().addAll(
-                "Argentina", "Uruguay", "Chile", "Paraguay", "Brasil", "Bolivia", "Perú"
-        );
-
-        comboPais.setValue("Argentina");
+        comboNacionalidad.getItems().addAll("Argentina", "Uruguaya", "Chilena", "Paraguaya", "Brasileña", "Otra");
+        comboTipoDoc.getItems().addAll("DNI", "Pasaporte", "Cédula", "Otro");
         comboTipoDoc.setValue("DNI");
+        combPosicionIva.getItems().addAll("RESPONSABLE INSCRIPTO", "MONOTRIBUTISTA", "Otro");
+        comboPais.getItems().addAll("Argentina");
+        comboPais.setValue("Argentina");
+
     }
 
+    // ===============================================================
+    // CARGA DE PROVINCIAS DESDE API GEOREF
+    // ===============================================================
+    private void cargarProvincias() {
+        comboProvincia.setDisable(true);
+        comboProvincia.setPromptText("Cargando provincias...");
+
+        String url = "https://apis.datos.gob.ar/georef/api/provincias?campos=nombre&max=100";
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET()
+                .build();
+
+        http.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(HttpResponse::body)
+                .thenAccept(this::procesarProvincias)
+                .exceptionally(ex -> {
+                    ex.printStackTrace();
+                    Platform.runLater(() -> {
+                        comboProvincia.setPromptText("Error al cargar");
+                        comboProvincia.setDisable(false);
+                    });
+                    return null;
+                });
+    }
+
+    private void procesarProvincias(String json) {
+        List<String> provincias = extraerNombres(json);
+        Platform.runLater(() -> {
+            comboProvincia.getItems().setAll(provincias);
+            comboProvincia.setPromptText("Provincia");
+            comboProvincia.setDisable(false);
+        });
+    }
+
+    // ===============================================================
+    // CARGA DE LOCALIDADES SEGÚN PROVINCIA
+    // ===============================================================
+    private void cargarLocalidades(String provinciaNombre) {
+        comboLocalidad.setDisable(true);
+        comboLocalidad.getItems().clear();
+        comboLocalidad.setPromptText("Cargando localidades...");
+
+        String provEncoded = URLEncoder.encode(provinciaNombre, StandardCharsets.UTF_8);
+        String url = "https://apis.datos.gob.ar/georef/api/localidades?provincia=" + provEncoded
+                + "&campos=nombre&max=5000";
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET()
+                .build();
+
+        http.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(HttpResponse::body)
+                .thenAccept(json -> {
+                    List<String> localidades = extraerNombres(json);
+                    Platform.runLater(() -> {
+                        comboLocalidad.getItems().setAll(localidades);
+                        comboLocalidad.setPromptText("Localidad");
+                        comboLocalidad.setDisable(false);
+                    });
+                })
+                .exceptionally(ex -> {
+                    ex.printStackTrace();
+                    Platform.runLater(() -> {
+                        comboLocalidad.setPromptText("Error al cargar");
+                        comboLocalidad.setDisable(false);
+                    });
+                    return null;
+                });
+    }
+
+    // ===============================================================
+    // PARSER SIMPLE (sin dependencias externas)
+    // ===============================================================
+    private List<String> extraerNombres(String json) {
+        List<String> nombres = new ArrayList<>();
+        String[] partes = json.split("\"nombre\"\\s*:\\s*");
+        for (int i = 1; i < partes.length; i++) {
+            String resto = partes[i].trim();
+            if (!resto.startsWith("\"")) continue;
+            int fin = resto.indexOf('"', 1);
+            if (fin > 1) {
+                String nombre = resto.substring(1, fin).trim();
+                if (!nombre.isBlank()) nombres.add(nombre);
+            }
+        }
+        nombres.sort(String::compareToIgnoreCase);
+        return nombres;
+    }
+
+    // ===============================================================
+    // BOTÓN SIGUIENTE
+    // ===============================================================
     @FXML
     private void onSiguienteClicked() {
+        // Obtención de datos del formulario
         String nombre = txtNombre.getText();
         String apellido = txtApellido.getText();
         String email = txtEmail.getText();
+        String tipoDoc = comboTipoDoc.getValue();
         String doc = txtNumDoc.getText();
+        String ocupacion = txtOcupacion.getText();
+        String posicionIVA = combPosicionIva.getValue();
+        String fechaNac = (dateNacimiento.getValue() != null) ? dateNacimiento.getValue().toString() : "No especificada";
+        String nacionalidad = comboNacionalidad.getValue();
+        String pais = comboPais.getValue();
+        String provincia = comboProvincia.getValue();
+        String localidad = comboLocalidad.getValue();
+        String calle = txtCalle.getText();
+        String nroCalle = txtNumeroCalle.getText();
+        String depto = txtDepto.getText();
+        String piso = txtPiso.getText();
+        String codPostal = txtCodigoPostal.getText();
+        String cuit = txtCuit.getText();
 
-        System.out.println(" --- DATOS DEL HUÉSPED ---");
-        System.out.println("Nombre: " + nombre);
-        System.out.println("Apellido: " + apellido);
-        System.out.println("Email: " + email);
-        System.out.println("Documento: " + doc);
-        System.out.println("País: " + comboPais.getValue());
-        System.out.println("Fecha de nacimiento: " + dateNacimiento.getValue());
-        System.out.println("-----------------------------");
-
-        // (más adelante acá se puede validar o guardar en BD)
+        System.out.println("========================================");
+        System.out.println("          DATOS DEL HUÉSPED");
+        System.out.println("========================================");
+        System.out.printf("%-22s%s%n", "Nombre:", nombre);
+        System.out.printf("%-22s%s%n", "Apellido:", apellido);
+        System.out.printf("%-22s%s%n", "Email:", email);
+        System.out.printf("%-22s%s%n", "Tipo de Documento:", tipoDoc);
+        System.out.printf("%-22s%s%n", "Número de Documento:", doc);
+        System.out.printf("%-22s%s%n", "CUIT:", cuit);
+        System.out.printf("%-22s%s%n", "Ocupación:", ocupacion);
+        System.out.printf("%-22s%s%n", "Posición frente al IVA:", posicionIVA);
+        System.out.printf("%-22s%s%n", "Fecha de Nacimiento:", fechaNac);
+        System.out.printf("%-22s%s%n", "Nacionalidad:", nacionalidad);
+        System.out.printf("%-22s%s%n", "País:", pais);
+        System.out.printf("%-22s%s%n", "Provincia:", provincia);
+        System.out.printf("%-22s%s%n", "Localidad:", localidad);
+        System.out.printf("%-22s%s%n", "Calle:", calle);
+        System.out.printf("%-22s%s%n", "Número:", nroCalle);
+        System.out.printf("%-22s%s%n", "Depto:", depto);
+        System.out.printf("%-22s%s%n", "Piso:", piso);
+        System.out.printf("%-22s%s%n", "Código Postal:", codPostal);
+        System.out.println("----------------------------------------");
     }
 }
-
