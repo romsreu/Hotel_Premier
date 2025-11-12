@@ -50,6 +50,11 @@ public class DarAltaHuespedController {
 
         aplicarMayusculas(txtNombre,txtApellido,txtCalle, txtOcupacion, txtEmail);
         aplicarMascaraDNI(txtNumDoc);
+        aplicarMascaraCUIT(txtCuit);
+        limitarCaracteres(15, txtNombre, txtApellido, txtCalle, txtOcupacion);
+        limitarCaracteres(4, txtNumeroCalle, txtDepto, txtPiso, txtCodigoPostal);
+        soloLetras(txtNombre, txtApellido, txtCalle, txtOcupacion);
+        soloNumeros(txtNumeroCalle, txtDepto, txtPiso, txtCodigoPostal);
         cargarProvincias();
 
 

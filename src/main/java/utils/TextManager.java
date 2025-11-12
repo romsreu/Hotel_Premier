@@ -8,6 +8,11 @@ import java.util.regex.Pattern;
 
 import java.util.Locale;
 
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextInputControl;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Utilidades para manipular texto en campos JavaFX.
  * Incluye conversión automática a mayúsculas.
@@ -16,7 +21,6 @@ public class TextManager {
 
     private static final Locale LOCALE_ES_AR = new Locale("es", "AR");
 
-    /** Aplica conversión automática a mayúsculas en todos los TextField indicados. */
     public static void aplicarMayusculas(TextField... campos) {
         for (TextField campo : campos) {
             if (campo == null) continue;
@@ -29,37 +33,24 @@ public class TextManager {
             }));
         }
     }
+
     public static void aplicarMascaraDNI(TextField tf) {
         final Pattern maxDigits = Pattern.compile("\\d{0,8}");
 
         UnaryOperator<TextFormatter.Change> filter = change -> {
-            // Propuesta tras el cambio (incluye puntos actuales, etc.)
             String proposedFormatted = change.getControlNewText();
-            // Solo dígitos de la propuesta
             String newDigits = proposedFormatted.replaceAll("\\D", "");
-
             if (!maxDigits.matcher(newDigits).matches()) return null;
-
-            // Formatear a DNI
             String formatted = formatDNI(newDigits);
-
-            // ----- Cálculo de caret -----
-            // 1) ¿cuántos dígitos hay antes del caret propuesto?
             int digitIndex = countDigitsUpTo(proposedFormatted, change.getCaretPosition());
-            // 2) En el texto ya formateado, ¿en qué índice cae ese dígito?
             int newCaret = caretPosForDigitIndex(formatted, digitIndex);
-
-            // Reemplazar todo el contenido por el formateado
             change.setText(formatted);
             change.setRange(0, change.getControlText().length());
-
-            // Fijar caret y anchor
             change.setCaretPosition(newCaret);
             change.setAnchor(newCaret);
 
             return change;
         };
-
         tf.setTextFormatter(new TextFormatter<>(filter));
     }
 
@@ -71,8 +62,6 @@ public class TextManager {
         return sb.toString();
     }
 
-    /* ===================== CUIT ===================== */
-
     /** Aplica máscara CUIT: ##-########-# (máx 11 dígitos) con caret correcto. */
     public static void aplicarMascaraCUIT(TextField tf) {
         final Pattern maxDigits = Pattern.compile("\\d{0,11}");
@@ -80,22 +69,16 @@ public class TextManager {
         UnaryOperator<TextFormatter.Change> filter = change -> {
             String proposedFormatted = change.getControlNewText();
             String newDigits = proposedFormatted.replaceAll("\\D", "");
-
             if (!maxDigits.matcher(newDigits).matches()) return null;
-
             String formatted = formatCUIT(newDigits);
-
             int digitIndex = countDigitsUpTo(proposedFormatted, change.getCaretPosition());
             int newCaret = caretPosForDigitIndex(formatted, digitIndex);
-
             change.setText(formatted);
             change.setRange(0, change.getControlText().length());
             change.setCaretPosition(newCaret);
             change.setAnchor(newCaret);
-
             return change;
         };
-
         tf.setTextFormatter(new TextFormatter<>(filter));
     }
 
@@ -109,7 +92,6 @@ public class TextManager {
 
     /* ===================== Helpers comunes ===================== */
 
-    /** Cuenta cuántos dígitos hay en s en el rango [0, upTo). */
     private static int countDigitsUpTo(String s, int upTo) {
         int count = 0;
         int limit = Math.min(upTo, s.length());
@@ -131,21 +113,100 @@ public class TextManager {
             if (Character.isDigit(formatted.charAt(i))) {
                 count++;
                 if (count == digitIndex) {
-                    // caret va después de este dígito
                     return i + 1;
                 }
             }
         }
-        // Si piden más que la cantidad de dígitos, ir al final
         return formatted.length();
     }
 
-    public static void limitarCaracteres(TextField tf, int maxLength) {
+    public static void soloAlfanumerico(TextInputControl... campos) {
+        List<TextInputControl> lista = Arrays.asList(campos);
+
+        for (TextInputControl campo : lista) {
+            campo.textProperty().addListener((obs, oldText, newText) -> {
+                if (newText == null) return;
+
+                // Reemplaza todo lo que no sea letra, número o espacio
+                String filtrado = newText.replaceAll("[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\\s]", "");
+                if (!filtrado.equals(newText)) {
+                    int caretPos = campo.getCaretPosition();
+                    campo.setText(filtrado);
+                    campo.positionCaret(Math.min(caretPos, filtrado.length()));
+                }
+            });
+        }
+    }
+
+    public static void limitarCaracteres(int maxLength, TextInputControl... campos) {
+        List<TextInputControl> lista = Arrays.asList(campos);
+        for (TextInputControl campo : lista) {
+            campo.textProperty().addListener((obs, oldText, newText) -> {
+                if (newText != null && newText.length() > maxLength) {
+                    campo.setText(newText.substring(0, maxLength));
+                    campo.positionCaret(maxLength);
+                }
+            });
+        }
+    }
+
+    public static void aplicarMascaraPasaporte(TextField tf) {
         tf.textProperty().addListener((obs, oldText, newText) -> {
-            if (newText != null && newText.length() > maxLength) {
-                tf.setText(newText.substring(0, maxLength));
+            if (newText == null) return;
+            String clean = newText.toUpperCase().replaceAll("[^A-Z0-9]", "");
+
+            if (clean.length() > 9)
+                clean = clean.substring(0, 9);
+            String letras = clean.replaceAll("[^A-Z]", "");
+            String numeros = clean.replaceAll("[^0-9]", "");
+            if (letras.length() > 3) letras = letras.substring(0, 3);
+            if (numeros.length() > 6) numeros = numeros.substring(0, 6);
+            String formatted = letras;
+            if (!numeros.isEmpty()) {
+                formatted += "-" + numeros;
+            }
+
+            if (!formatted.equals(newText)) {
+                tf.setText(formatted);
+                tf.positionCaret(formatted.length());
             }
         });
+    }
+
+    public static void soloLetras(TextInputControl... campos) {
+        List<TextInputControl> lista = Arrays.asList(campos);
+
+        for (TextInputControl campo : lista) {
+            campo.textProperty().addListener((obs, oldText, newText) -> {
+                if (newText == null) return;
+
+                // Solo letras y espacios (admite tildes y ñ)
+                String filtrado = newText.replaceAll("[^a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]", "");
+                if (!filtrado.equals(newText)) {
+                    int caretPos = campo.getCaretPosition();
+                    campo.setText(filtrado);
+                    campo.positionCaret(Math.min(caretPos, filtrado.length()));
+                }
+            });
+        }
+    }
+
+    public static void soloNumeros(TextInputControl... campos) {
+        List<TextInputControl> lista = Arrays.asList(campos);
+
+        for (TextInputControl campo : lista) {
+            campo.textProperty().addListener((obs, oldText, newText) -> {
+                if (newText == null) return;
+
+                // Permite solo dígitos (0-9)
+                String filtrado = newText.replaceAll("[^0-9]", "");
+                if (!filtrado.equals(newText)) {
+                    int caretPos = campo.getCaretPosition();
+                    campo.setText(filtrado);
+                    campo.positionCaret(Math.min(caretPos, filtrado.length()));
+                }
+            });
+        }
     }
 }
 
