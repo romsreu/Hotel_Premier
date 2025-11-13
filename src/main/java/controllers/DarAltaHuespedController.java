@@ -12,6 +12,7 @@ import utils.GeorefCache;
 import utils.Validator;
 import utils.Validator.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class DarAltaHuespedController {
@@ -67,6 +68,24 @@ public class DarAltaHuespedController {
         soloNumeros(txtNumeroCalle, txtDepto, txtPiso, txtCodigoPostal);
         soloEmail(txtEmail);
 
+        LocalDate fechaMinima = LocalDate.now().minusYears(18);
+
+        // Mostrar por defecto hace 18 años (UX)
+        dateNacimiento.setValue(fechaMinima);
+
+        // Bloquear TODAS las fechas que te hagan menor de 18
+        dateNacimiento.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+
+                // Bloquear fechas posteriores a (hoy - 18 años)
+                setDisable(empty || date.isAfter(fechaMinima));
+            }
+        });
+
+
+
         // ==========================================
         // CARGA DE PROVINCIAS DESDE CACHE
         // ==========================================
@@ -112,6 +131,7 @@ public class DarAltaHuespedController {
         validator.addRule(comboProvincia, provinciaO).required();
         validator.addRule(comboLocalidad, localidadO).required();
         validator.addRule(comboPais, paisO).required();
+        validator.addRule(dateNacimiento, fechanacO).required().mayorDe18();
         validator.addRule(dateNacimiento, fechanacO).required();
         validator.addRule(txtCalle, calleO).required();
         validator.addRule(txtNumeroCalle, numCalleO).required();

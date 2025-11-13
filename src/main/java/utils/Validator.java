@@ -8,6 +8,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.control.Tooltip;
 import javafx.util.Duration;
+import java.time.LocalDate;
+import java.time.Period;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +63,8 @@ public class Validator {
         protected boolean cuit = false;
         protected boolean pasaporte = false;
         protected TextField dniRelacionado = null;
+        protected boolean mayorDe18 = false;
+
 
 
         public ValidationRule(Node campo, ImageView icono) {
@@ -165,6 +170,37 @@ public class Validator {
                 }
             }
 
+            if (mayorDe18) {
+
+                if (!(campo instanceof DatePicker dp)) {
+                    showError("Fecha inválida", "/images/incompleto.png");
+                    return false;
+                }
+
+                LocalDate fecha = dp.getValue();
+
+                if (fecha == null) {
+                    showError("Debe seleccionar una fecha", "/images/advertencia.png");
+                    return false;
+                }
+
+                LocalDate hoy = LocalDate.now();
+
+                // No permitir fechas futuras
+                if (fecha.isAfter(hoy)) {
+                    showError("La fecha no puede ser futura", "/images/incompleto.png");
+                    return false;
+                }
+
+                // Validar 18 años
+                Period edad = Period.between(fecha, hoy);
+
+                if (edad.getYears() < 18) {
+                    showError("Debe ser mayor de 18 años", "/images/incompleto.png");
+                    return false;
+                }
+            }
+
 
             return true;
         }
@@ -205,6 +241,12 @@ public class Validator {
         public FieldValidator(Node campo, ImageView icono) {
             super(campo, icono);
         }
+
+        public FieldValidator mayorDe18() {
+            this.mayorDe18 = true;
+            return this;
+        }
+
 
         public FieldValidator required() {
             this.isRequired = true;
