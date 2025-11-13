@@ -8,6 +8,8 @@
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -16,7 +18,6 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-
 
 <AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="950.0" styleClass="panel-azul-petroleo" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.DarAltaHuespedController">
    <children>
@@ -46,11 +47,23 @@
                <children>
                   <VBox alignment="BOTTOM_LEFT">
                      <children>
-                        <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Nombre">
-                           <font>
-                              <Font name="Lucida Bright Demibold" size="13.0" />
-                           </font>
-                        </Label>
+                        <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                           <children>
+                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Nombre">
+                                 <font>
+                                    <Font name="Lucida Bright Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <ImageView fx:id="nombreO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/advertencia.png" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="CROSSHAIR" />
+                                 </cursor>
+                              </ImageView>
+                           </children>
+                        </HBox>
                         <TextField fx:id="txtNombre" promptText="Ingrese el nombre" styleClass="text-field" stylesheets="@../../styles/campos.css" />
                      </children>
                      <GridPane.margin>
@@ -59,11 +72,23 @@
                   </VBox>
                   <VBox alignment="BOTTOM_LEFT" GridPane.columnIndex="1">
                      <children>
-                        <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Apellido">
-                           <font>
-                              <Font name="Lucida Bright Demibold" size="13.0" />
-                           </font>
-                        </Label>
+                        <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                           <children>
+                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Apellido">
+                                 <font>
+                                    <Font name="Lucida Bright Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <ImageView fx:id="apellidoO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/advertencia.png" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="CROSSHAIR" />
+                                 </cursor>
+                              </ImageView>
+                           </children>
+                        </HBox>
                         <TextField fx:id="txtApellido" promptText="Ingrese el apellido" styleClass="text-field" stylesheets="@../../styles/campos.css" />
                      </children>
                      <opaqueInsets>
@@ -75,11 +100,23 @@
                   </VBox>
                   <VBox alignment="BOTTOM_LEFT" GridPane.columnIndex="2">
                      <children>
-                        <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Nacionalidad">
-                           <font>
-                              <Font name="Lucida Bright Demibold" size="13.0" />
-                           </font>
-                        </Label>
+                        <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                           <children>
+                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Nacionalidad">
+                                 <font>
+                                    <Font name="Lucida Bright Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <ImageView fx:id="nacionalidadO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/advertencia.png" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="CROSSHAIR" />
+                                 </cursor>
+                              </ImageView>
+                           </children>
+                        </HBox>
                         <ComboBox fx:id="comboNacionalidad" maxWidth="1.7976931348623157E308" promptText="Seleccionar" styleClass="combo-box" stylesheets="@../../styles/campos.css">
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -92,11 +129,23 @@
                   </VBox>
                   <VBox alignment="BOTTOM_LEFT" GridPane.columnIndex="3">
                      <children>
-                        <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Posición frente al IVA">
-                           <font>
-                              <Font name="Lucida Bright Demibold" size="13.0" />
-                           </font>
-                        </Label>
+                        <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                           <children>
+                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Posición frente al IVA">
+                                 <font>
+                                    <Font name="Lucida Bright Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <ImageView fx:id="posivaO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/advertencia.png" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="CROSSHAIR" />
+                                 </cursor>
+                              </ImageView>
+                           </children>
+                        </HBox>
                         <ComboBox fx:id="combPosicionIva" maxWidth="1.7976931348623157E308" promptText="Seleccionar" stylesheets="@../../styles/campos.css">
                            <VBox.margin>
                               <Insets />
@@ -125,11 +174,23 @@
                   </VBox>
                   <VBox alignment="BOTTOM_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="1">
                      <children>
-                        <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Pais">
-                           <font>
-                              <Font name="Lucida Bright Demibold" size="13.0" />
-                           </font>
-                        </Label>
+                        <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                           <children>
+                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Pais">
+                                 <font>
+                                    <Font name="Lucida Bright Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <ImageView fx:id="paisO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/advertencia.png" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="CROSSHAIR" />
+                                 </cursor>
+                              </ImageView>
+                           </children>
+                        </HBox>
                         <ComboBox fx:id="comboPais" maxWidth="1.7976931348623157E308" promptText="Selecionar" stylesheets="@../../styles/campos.css">
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -142,11 +203,23 @@
                   </VBox>
                   <VBox alignment="BOTTOM_LEFT" GridPane.columnIndex="2" GridPane.rowIndex="1">
                      <children>
-                        <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Provincia">
-                           <font>
-                              <Font name="Lucida Bright Demibold" size="13.0" />
-                           </font>
-                        </Label>
+                        <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                           <children>
+                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Provincia">
+                                 <font>
+                                    <Font name="Lucida Bright Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <ImageView fx:id="provinciaO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/advertencia.png" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="CROSSHAIR" />
+                                 </cursor>
+                              </ImageView>
+                           </children>
+                        </HBox>
                         <ComboBox fx:id="comboProvincia" maxWidth="1.7976931348623157E308" promptText="Seleccionar" stylesheets="@../../styles/campos.css">
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -159,11 +232,23 @@
                   </VBox>
                   <VBox alignment="BOTTOM_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="1">
                      <children>
-                        <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Localidad">
-                           <font>
-                              <Font name="Lucida Bright Demibold" size="13.0" />
-                           </font>
-                        </Label>
+                        <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                           <children>
+                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Localidad">
+                                 <font>
+                                    <Font name="Lucida Bright Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <ImageView fx:id="localidadO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/advertencia.png" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="CROSSHAIR" />
+                                 </cursor>
+                              </ImageView>
+                           </children>
+                        </HBox>
                         <ComboBox fx:id="comboLocalidad" maxWidth="1.7976931348623157E308" promptText="Seleccionar" stylesheets="@../../styles/campos.css">
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -176,11 +261,23 @@
                   </VBox>
                   <VBox alignment="BOTTOM_LEFT" GridPane.rowIndex="2">
                      <children>
-                        <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Tipo de documento">
-                           <font>
-                              <Font name="Lucida Bright Demibold" size="13.0" />
-                           </font>
-                        </Label>
+                        <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                           <children>
+                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Tipo de documento">
+                                 <font>
+                                    <Font name="Lucida Bright Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <ImageView fx:id="tipodniO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/advertencia.png" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="CROSSHAIR" />
+                                 </cursor>
+                              </ImageView>
+                           </children>
+                        </HBox>
                         <ComboBox fx:id="comboTipoDoc" maxWidth="1.7976931348623157E308" promptText="Seleccionar" style="-fx-border-color: #C9A66B;" styleClass="combo-box" stylesheets="@../../styles/campos.css">
                            <cursor>
                               <Cursor fx:constant="HAND" />
@@ -193,11 +290,23 @@
                   </VBox>
                   <VBox alignment="BOTTOM_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="2">
                      <children>
-                        <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Número de documento">
-                           <font>
-                              <Font name="Lucida Bright Demibold" size="13.0" />
-                           </font>
-                        </Label>
+                        <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                           <children>
+                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Número de documento">
+                                 <font>
+                                    <Font name="Lucida Bright Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <ImageView fx:id="numdniO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/advertencia.png" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="CROSSHAIR" />
+                                 </cursor>
+                              </ImageView>
+                           </children>
+                        </HBox>
                         <TextField fx:id="txtNumDoc" promptText="Ingrese núm. de doc." style="-fx-border-color: #C9A66B;" stylesheets="@../../styles/campos.css" />
                      </children>
                      <GridPane.margin>
@@ -206,11 +315,23 @@
                   </VBox>
                   <VBox alignment="BOTTOM_LEFT" GridPane.columnIndex="2" GridPane.rowIndex="2">
                      <children>
-                        <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Fecha de nacimiento">
-                           <font>
-                              <Font name="Lucida Bright Demibold" size="13.0" />
-                           </font>
-                        </Label>
+                        <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                           <children>
+                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Fecha de nacimiento">
+                                 <font>
+                                    <Font name="Lucida Bright Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <ImageView fx:id="fechanacO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/advertencia.png" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="CROSSHAIR" />
+                                 </cursor>
+                              </ImageView>
+                           </children>
+                        </HBox>
                         <DatePicker fx:id="dateNacimiento" maxWidth="1.7976931348623157E308" promptText="Seleccionar" style="-fx-border-color: #C9A66B;" stylesheets="@../../styles/campos.css" />
                      </children>
                      <GridPane.margin>
@@ -219,11 +340,23 @@
                   </VBox>
                   <VBox alignment="BOTTOM_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="2">
                      <children>
-                        <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Ocupación">
-                           <font>
-                              <Font name="Lucida Bright Demibold" size="13.0" />
-                           </font>
-                        </Label>
+                        <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                           <children>
+                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Ocupación">
+                                 <font>
+                                    <Font name="Lucida Bright Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <ImageView fx:id="ocupacionO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/advertencia.png" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="CROSSHAIR" />
+                                 </cursor>
+                              </ImageView>
+                           </children>
+                        </HBox>
                         <TextField fx:id="txtOcupacion" promptText="Ingrese la ocupación" stylesheets="@../../styles/campos.css" />
                      </children>
                      <GridPane.margin>
@@ -232,11 +365,23 @@
                   </VBox>
                   <VBox alignment="BOTTOM_LEFT" GridPane.rowIndex="3">
                      <children>
-                        <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Calle">
-                           <font>
-                              <Font name="Lucida Bright Demibold" size="13.0" />
-                           </font>
-                        </Label>
+                        <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                           <children>
+                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Calle">
+                                 <font>
+                                    <Font name="Lucida Bright Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <ImageView fx:id="calleO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/advertencia.png" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="CROSSHAIR" />
+                                 </cursor>
+                              </ImageView>
+                           </children>
+                        </HBox>
                         <TextField fx:id="txtCalle" promptText="Ingrese la calle" stylesheets="@../../styles/campos.css" />
                      </children>
                      <GridPane.margin>
@@ -247,11 +392,23 @@
                      <children>
                         <VBox alignment="BOTTOM_LEFT">
                            <children>
-                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Número">
-                                 <font>
-                                    <Font name="Lucida Bright Demibold" size="13.0" />
-                                 </font>
-                              </Label>
+                              <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                                 <children>
+                                    <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Número">
+                                       <font>
+                                          <Font name="Lucida Bright Demibold" size="13.0" />
+                                       </font>
+                                    </Label>
+                                    <ImageView fx:id="numCalleO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../../images/advertencia.png" />
+                                       </image>
+                                       <cursor>
+                                          <Cursor fx:constant="CROSSHAIR" />
+                                       </cursor>
+                                    </ImageView>
+                                 </children>
+                              </HBox>
                               <TextField fx:id="txtNumeroCalle" prefWidth="220.0" promptText="Ingrese el número" stylesheets="@../../styles/campos.css" />
                            </children>
                         </VBox>
@@ -284,11 +441,23 @@
                         </VBox>
                         <VBox alignment="BOTTOM_LEFT" maxWidth="1.7976931348623157E308">
                            <children>
-                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Código Postal" wrapText="true">
-                                 <font>
-                                    <Font name="Lucida Bright Demibold" size="13.0" />
-                                 </font>
-                              </Label>
+                              <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                                 <children>
+                                    <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Código Postal" wrapText="true">
+                                       <font>
+                                          <Font name="Lucida Bright Demibold" size="11.0" />
+                                       </font>
+                                    </Label>
+                                    <ImageView fx:id="codPostalO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../../images/advertencia.png" />
+                                       </image>
+                                       <cursor>
+                                          <Cursor fx:constant="CROSSHAIR" />
+                                       </cursor>
+                                    </ImageView>
+                                 </children>
+                              </HBox>
                               <TextField fx:id="txtCodigoPostal" prefWidth="220.0" promptText="Ingrese cód, postal." stylesheets="@../../styles/campos.css" />
                            </children>
                         </VBox>
