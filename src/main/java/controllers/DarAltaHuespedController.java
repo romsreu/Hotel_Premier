@@ -107,6 +107,8 @@ public class DarAltaHuespedController {
         validator.addRule(txtNombre, nombreO).required().minLength(3);
         validator.addRule(txtApellido, apellidoO).required().minLength(3);
         validator.addRule(txtEmail, emailO).required().email();
+        validator.addRule(comboNacionalidad, nacionalidadO).required();
+        validator.addRule(combPosicionIva, posivaO).required();
         validator.addRule(comboProvincia, provinciaO).required();
         validator.addRule(comboLocalidad, localidadO).required();
         validator.addRule(comboPais, paisO).required();
