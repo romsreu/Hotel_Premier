@@ -1,6 +1,7 @@
 package controllers;
 
 import enums.PopUpType;
+import javafx.animation.FadeTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -10,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 public class PopUpController {
 
@@ -58,19 +60,98 @@ public class PopUpController {
             );
 
             Parent root = loader.load();
-
             PopUpController controller = loader.getController();
             controller.setPopUp(tipo, mensaje);
 
+            // ============================
+            // OWNER (VENTANA PRINCIPAL)
+            // ============================
+            Stage owner = null;
+
+            for (javafx.stage.Window w : javafx.stage.Window.getWindows()) {
+                if (w instanceof Stage stage && stage.isFocused()) {
+                    owner = stage;
+                    break;
+                }
+            }
+
+            if (owner == null) {
+                for (javafx.stage.Window w : javafx.stage.Window.getWindows()) {
+                    if (w instanceof Stage stage) {
+                        owner = stage;
+                        break;
+                    }
+                }
+            }
+
+            final Stage finalOwner = owner;
+
+            // ============================
+            // POPUP SIN MODALIDAD
+            // ============================
             Stage ventana = new Stage();
-            ventana.initModality(Modality.APPLICATION_MODAL);
-            ventana.setResizable(false);
-            ventana.setTitle("Mensaje");
+            ventana.initStyle(javafx.stage.StageStyle.UNDECORATED);
+            ventana.initModality(Modality.NONE);  // 🔥 permite mover/minimizar el fondo
+            ventana.initOwner(finalOwner);
+
             ventana.setScene(new Scene(root));
-            ventana.showAndWait();
+            ventana.setResizable(false);
+
+            // ============================
+            // BLUR AL OWNER
+            // ============================
+            if (finalOwner != null) {
+                finalOwner.getScene().getRoot().setEffect(new javafx.scene.effect.GaussianBlur(18));
+            }
+
+            ventana.setOnHidden(ev -> {
+                if (finalOwner != null) {
+                    finalOwner.getScene().getRoot().setEffect(null);
+                    finalOwner.getScene().getRoot().setMouseTransparent(false);
+                }
+            });
+
+            // ============================
+            // BLOQUEAR CLICS AL FONDO (sin modal)
+            // ============================
+            if (finalOwner != null) {
+                finalOwner.getScene().getRoot().setMouseTransparent(true);
+            }
+
+            // ============================
+            // CENTRAR POPUP
+            // ============================
+            Runnable centrar = () -> {
+                if (finalOwner == null) return;
+                ventana.setX(finalOwner.getX() + (finalOwner.getWidth() - ventana.getWidth()) / 2);
+                ventana.setY(finalOwner.getY() + (finalOwner.getHeight() - ventana.getHeight()) / 2);
+            };
+
+            ventana.setOnShown(e -> centrar.run());
+
+            if (finalOwner != null) {
+                finalOwner.xProperty().addListener((o, a, b) -> centrar.run());
+                finalOwner.yProperty().addListener((o, a, b) -> centrar.run());
+                finalOwner.widthProperty().addListener((o, a, b) -> centrar.run());
+                finalOwner.heightProperty().addListener((o, a, b) -> centrar.run());
+            }
+
+            // ============================
+            // ANIMACIÓN FADE-IN
+            // ============================
+            FadeTransition ft = new FadeTransition(Duration.millis(180), root);
+            root.setOpacity(0);
+            ft.setToValue(1);
+            ft.play();
+
+            ventana.show();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+
+
+
 }

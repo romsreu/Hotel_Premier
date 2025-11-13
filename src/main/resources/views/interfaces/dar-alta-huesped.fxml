@@ -19,7 +19,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="950.0" styleClass="panel-azul-petroleo" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.DarAltaHuespedController">
+<AnchorPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="950.0" styleClass="panel-azul-noche" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.DarAltaHuespedController">
    <children>
       <StackPane layoutX="-3.0" layoutY="148.0" stylesheets="@../../styles/fondos.css" AnchorPane.bottomAnchor="183.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="148.0">
          <children>
@@ -161,11 +161,23 @@
                   </VBox>
                   <VBox alignment="BOTTOM_LEFT" GridPane.rowIndex="1">
                      <children>
-                        <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Email" textFill="#e8e0c8">
-                           <font>
-                              <Font name="Lucida Bright Demibold" size="13.0" />
-                           </font>
-                        </Label>
+                        <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                           <children>
+                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="Email" textFill="#e8e0c8">
+                                 <font>
+                                    <Font name="Lucida Bright Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <ImageView fx:id="emailO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/advertencia.png" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="CROSSHAIR" />
+                                 </cursor>
+                              </ImageView>
+                           </children>
+                        </HBox>
                         <TextField fx:id="txtEmail" promptText="Ingrese el email" stylesheets="@../../styles/campos.css" />
                      </children>
                      <GridPane.margin>
@@ -468,11 +480,23 @@
                   </HBox>
                   <VBox alignment="BOTTOM_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="3">
                      <children>
-                        <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="CUIT">
-                           <font>
-                              <Font name="Lucida Bright Demibold" size="13.0" />
-                           </font>
-                        </Label>
+                        <HBox alignment="BOTTOM_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                           <children>
+                              <Label styleClass="texto-perla" stylesheets="@../../styles/textos.css" text="CUIT">
+                                 <font>
+                                    <Font name="Lucida Bright Demibold" size="13.0" />
+                                 </font>
+                              </Label>
+                              <ImageView fx:id="cuitO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../images/advertencia.png" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="CROSSHAIR" />
+                                 </cursor>
+                              </ImageView>
+                           </children>
+                        </HBox>
                         <TextField fx:id="txtCuit" promptText="Ingrese el CUIT" stylesheets="@../../styles/campos.css" />
                      </children>
                      <GridPane.margin>
@@ -486,22 +510,26 @@
             </GridPane>
          </children>
       </StackPane>
-      <Button fx:id="btnCancelar" layoutX="204.0" layoutY="489.0" mnemonicParsing="false" prefHeight="54.0" prefWidth="185.0" styleClass="boton-cancelar" stylesheets="@../../styles/botones.css" text="CANCELAR" AnchorPane.bottomAnchor="56.60000000000002" AnchorPane.leftAnchor="204.0">
-         <font>
-            <Font name="Lucida Bright Demibold" size="19.0" />
-         </font>
-         <cursor>
-            <Cursor fx:constant="HAND" />
-         </cursor>
-      </Button>
-      <Button fx:id="btnSiguiente" layoutX="526.0" layoutY="489.0" mnemonicParsing="false" onAction="#onSiguienteClicked" prefHeight="54.0" prefWidth="192.0" styleClass="boton-confirmar" stylesheets="@../../styles/botones.css" text="SIGUIENTE" textFill="#e1ffcc" AnchorPane.bottomAnchor="56.60000000000002" AnchorPane.rightAnchor="202.53665847778313">
-         <font>
-            <Font name="Lucida Bright Demibold" size="19.0" />
-         </font>
-         <cursor>
-            <Cursor fx:constant="HAND" />
-         </cursor>
-      </Button>
+      <HBox alignment="CENTER" prefHeight="100.0" prefWidth="382.0" spacing="70.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+         <children>
+            <Button fx:id="btnCancelar" mnemonicParsing="false" onAction="#onCancelarClicked" prefHeight="54.0" prefWidth="185.0" styleClass="boton-cancelar" stylesheets="@../../styles/botones.css" text="CANCELAR">
+               <font>
+                  <Font name="Lucida Bright Demibold" size="19.0" />
+               </font>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Button>
+            <Button fx:id="btnSiguiente" mnemonicParsing="false" onAction="#onSiguienteClicked" prefHeight="54.0" prefWidth="192.0" styleClass="boton-confirmar" stylesheets="@../../styles/botones.css" text="SIGUIENTE" textFill="#e1ffcc">
+               <font>
+                  <Font name="Lucida Bright Demibold" size="19.0" />
+               </font>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Button>
+         </children>
+      </HBox>
       <StackPane layoutY="39.0" prefHeight="75.0" prefWidth="950.0" styleClass="panel-negro-suave" stylesheets="@../../styles/paneles.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <children>
             <Label styleClass="texto-titulo" stylesheets="@../../styles/textos.css" text="DAR ALTA DE HUÉSPED" textAlignment="CENTER">

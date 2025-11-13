@@ -3,8 +3,7 @@ package controllers;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.layout.AnchorPane;
-import javafx.stage.Stage;
-import utils.SceneManager; // usa el gestor de escenas
+import ar.utn.hotel.hotel_premier.HotelPremier;
 
 public class MenuPrincipalController {
 
@@ -13,8 +12,6 @@ public class MenuPrincipalController {
 
     @FXML
     private void on_alta_huesped_pressed(ActionEvent event) {
-        Stage stage = (Stage) rootPane.getScene().getWindow();
-        stage.setScene(SceneManager.getEscena("alta_huesped"));
-        stage.show();
+        HotelPremier.cambiarA("alta_huesped");
     }
 }

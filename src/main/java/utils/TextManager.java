@@ -208,6 +208,48 @@ public class TextManager {
             });
         }
     }
+
+    public static void soloEmail(TextInputControl... campos) {
+        List<TextInputControl> lista = Arrays.asList(campos);
+
+        for (TextInputControl campo : lista) {
+            campo.textProperty().addListener((obs, oldText, newText) -> {
+                if (newText == null) return;
+
+                // Paso 1: eliminar caracteres no permitidos
+                String filtrado = newText.replaceAll("[^a-zA-Z0-9@._\\-]", "");
+
+                // Paso 2: permitir solo un '@'
+                int primeraArroba = filtrado.indexOf('@');
+                if (primeraArroba != -1) {
+                    int segundaArroba = filtrado.indexOf('@', primeraArroba + 1);
+                    if (segundaArroba != -1) {
+                        // si hay más de un arroba, eliminamos los siguientes
+                        filtrado = filtrado.substring(0, segundaArroba);
+                    }
+                }
+
+                // Paso 3: evitar que empiece con '@' o '.'
+                filtrado = filtrado.replaceAll("^[.@]+", "");
+
+                // Paso 4: limitar puntos consecutivos
+                filtrado = filtrado.replaceAll("\\.{2,}", ".");
+
+                // Paso 5: limitar longitud (seguridad opcional)
+                if (filtrado.length() > 100) {
+                    filtrado = filtrado.substring(0, 100);
+                }
+
+                // Paso 6: actualizar si hubo cambios
+                if (!filtrado.equals(newText)) {
+                    int caretPos = campo.getCaretPosition();
+                    campo.setText(filtrado);
+                    campo.positionCaret(Math.min(caretPos, filtrado.length()));
+                }
+            });
+        }
+    }
+
 }
 
 

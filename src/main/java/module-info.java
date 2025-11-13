@@ -5,6 +5,7 @@ module ar.utn.hotel.hotel_premier {
     requires org.controlsfx.controls;
     requires org.kordamp.ikonli.javafx;
     requires java.net.http;
+    requires java.desktop;
 
     opens ar.utn.hotel.hotel_premier to javafx.fxml;
     opens controllers to javafx.fxml;

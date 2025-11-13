@@ -1,11 +1,17 @@
 package controllers;
 
+import ar.utn.hotel.hotel_premier.HotelPremier;
 import enums.PopUpType;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import static controllers.PopUpController.mostrarPopUp;
+import javafx.scene.image.ImageView;
+
 import static utils.TextManager.*;
+
+import utils.GeorefCache;
+import utils.Validator;
+import utils.Validator.*;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -36,30 +42,67 @@ public class DarAltaHuespedController {
     @FXML private ComboBox<String> comboProvincia;
     @FXML private ComboBox<String> comboTipoDoc;
     @FXML private ComboBox<String> comboPais;
-    @FXML private Button btnCancelar;
-    @FXML private Button btnSiguiente;
 
+    //Iconos de validación (campos vacios o mal formateados) de cada campo
+    @FXML private ImageView nombreO;
+    @FXML private ImageView apellidoO;
+    @FXML private ImageView nacionalidadO;
+    @FXML private ImageView posivaO;
+    @FXML private ImageView emailO;
+    @FXML private ImageView paisO;
+    @FXML private ImageView provinciaO;
+    @FXML private ImageView localidadO;
+    @FXML private ImageView tipodniO;
+    @FXML private ImageView numdniO;
+    @FXML private ImageView fechanacO;
+    @FXML private ImageView ocupacionO;
+    @FXML private ImageView calleO;
+    @FXML private ImageView numCalleO;
+    @FXML private ImageView codPostalO;
+    @FXML private ImageView cuitO;
 
     // === CLIENTE HTTP (se reutiliza para todas las llamadas) ===
     private final HttpClient http = HttpClient.newHttpClient();
-
+    private Validator validator;
     @FXML
     public void initialize() {
-
+        ocultarTodosLosIconos();
         aplicarMayusculas(txtNombre,txtApellido,txtCalle, txtOcupacion, txtEmail);
         aplicarMascaraDNI(txtNumDoc);
         aplicarMascaraCUIT(txtCuit);
+        limitarCaracteres(40, txtEmail);
         limitarCaracteres(15, txtNombre, txtApellido, txtCalle, txtOcupacion);
         limitarCaracteres(4, txtNumeroCalle, txtDepto, txtPiso, txtCodigoPostal);
         soloLetras(txtNombre, txtApellido, txtCalle, txtOcupacion);
         soloNumeros(txtNumeroCalle, txtDepto, txtPiso, txtCodigoPostal);
-        cargarProvincias();
+        soloEmail(txtEmail);
 
+        // ==========================================
+        // CARGA DE PROVINCIAS DESDE CACHE
+        // ==========================================
+        if (GeorefCache.provincias != null) {
+            comboProvincia.getItems().setAll(GeorefCache.provincias);
+        }
+
+        // ==========================================
+        // CARGA DE LOCALIDADES DESDE CACHE
+        // ==========================================
+        comboProvincia.setOnAction(e -> {
+            String prov = comboProvincia.getValue();
+            if (prov != null) {
+                comboLocalidad.getItems().setAll(
+                        GeorefCache.localidadesPorProvincia.getOrDefault(prov, List.of())
+                );
+            }
+        });
 
         comboProvincia.setOnAction(e -> {
             String prov = comboProvincia.getValue();
             if (prov != null && !prov.isBlank()) {
-                cargarLocalidades(prov);
+                comboLocalidad.getItems().setAll(
+                        GeorefCache.localidadesPorProvincia.getOrDefault(prov, List.of())
+                );
+                comboLocalidad.setDisable(false);
             }
         });
 
@@ -70,106 +113,49 @@ public class DarAltaHuespedController {
         comboPais.getItems().addAll("Argentina");
         comboPais.setValue("Argentina");
 
+        validator = new Validator();
+        validator.addRule(txtNombre, nombreO).required().minLength(3);
+        validator.addRule(txtApellido, apellidoO).required().minLength(3);
+        validator.addRule(txtEmail, emailO).required().email();
+        validator.addRule(comboProvincia, provinciaO).required();
+        validator.addRule(comboLocalidad, localidadO).required();
+        validator.addRule(comboPais, paisO).required();
+        validator.addRule(dateNacimiento, fechanacO).required();
+        validator.addRule(txtCalle, calleO).required();
+        validator.addRule(txtNumeroCalle, numCalleO).required();
+        validator.addRule(txtCodigoPostal, codPostalO).required();
+        validator.addRule(txtOcupacion, ocupacionO).required();
+        validator.addRule(comboTipoDoc, tipodniO).required();
+        validator.addRule(txtNumDoc, numdniO).required();
+        validator.addRule(txtCuit, cuitO).required().cuit();
+        validator.addRule(txtNumDoc, numdniO).required().dni();
+
     }
 
-    // ===============================================================
-    // CARGA DE PROVINCIAS DESDE API GEOREF
-    // ===============================================================
-    private void cargarProvincias() {
-        comboProvincia.setDisable(true);
-        comboProvincia.setPromptText("Cargando provincias...");
-
-        String url = "https://apis.datos.gob.ar/georef/api/provincias?campos=nombre&max=100";
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .build();
-
-        http.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(HttpResponse::body)
-                .thenAccept(this::procesarProvincias)
-                .exceptionally(ex -> {
-                    ex.printStackTrace();
-                    Platform.runLater(() -> {
-                        comboProvincia.setPromptText("Error al cargar");
-                        comboProvincia.setDisable(false);
-                    });
-                    return null;
-                });
+    private void ocultarTodosLosIconos() {
+        calleO.setVisible(false);
+        numCalleO.setVisible(false);
+        codPostalO.setVisible(false);
+        tipodniO.setVisible(false);
+        numdniO.setVisible(false);
+        fechanacO.setVisible(false);
+        ocupacionO.setVisible(false);
+        localidadO.setVisible(false);
+        provinciaO.setVisible(false);
+        paisO.setVisible(false);
+        posivaO.setVisible(false);
+        apellidoO.setVisible(false);
+        nombreO.setVisible(false);
+        cuitO.setVisible(false);
+        nacionalidadO.setVisible(false);
+        emailO.setVisible(false);
     }
 
-    private void procesarProvincias(String json) {
-        List<String> provincias = extraerNombres(json);
-        Platform.runLater(() -> {
-            comboProvincia.getItems().setAll(provincias);
-            comboProvincia.setPromptText("Provincia");
-            comboProvincia.setDisable(false);
-        });
-    }
 
-    // ===============================================================
-    // CARGA DE LOCALIDADES SEGÚN PROVINCIA
-    // ===============================================================
-    private void cargarLocalidades(String provinciaNombre) {
-        comboLocalidad.setDisable(true);
-        comboLocalidad.getItems().clear();
-        comboLocalidad.setPromptText("Cargando localidades...");
 
-        String provEncoded = URLEncoder.encode(provinciaNombre, StandardCharsets.UTF_8);
-        String url = "https://apis.datos.gob.ar/georef/api/localidades?provincia=" + provEncoded
-                + "&campos=nombre&max=5000";
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .build();
-
-        http.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(HttpResponse::body)
-                .thenAccept(json -> {
-                    List<String> localidades = extraerNombres(json);
-                    Platform.runLater(() -> {
-                        comboLocalidad.getItems().setAll(localidades);
-                        comboLocalidad.setPromptText("Localidad");
-                        comboLocalidad.setDisable(false);
-                    });
-                })
-                .exceptionally(ex -> {
-                    ex.printStackTrace();
-                    Platform.runLater(() -> {
-                        comboLocalidad.setPromptText("Error al cargar");
-                        comboLocalidad.setDisable(false);
-                    });
-                    return null;
-                });
-    }
-
-    // ===============================================================
-    // PARSER SIMPLE (sin dependencias externas)
-    // ===============================================================
-    private List<String> extraerNombres(String json) {
-        List<String> nombres = new ArrayList<>();
-        String[] partes = json.split("\"nombre\"\\s*:\\s*");
-        for (int i = 1; i < partes.length; i++) {
-            String resto = partes[i].trim();
-            if (!resto.startsWith("\"")) continue;
-            int fin = resto.indexOf('"', 1);
-            if (fin > 1) {
-                String nombre = resto.substring(1, fin).trim();
-                if (!nombre.isBlank()) nombres.add(nombre);
-            }
-        }
-        nombres.sort(String::compareToIgnoreCase);
-        return nombres;
-    }
-
-    // ===============================================================
-    // BOTÓN SIGUIENTE
-    // ===============================================================
     @FXML
     private void onSiguienteClicked() {
-        // Obtención de datos del formulario
         String nombre = txtNombre.getText();
         String apellido = txtApellido.getText();
         String email = txtEmail.getText();
@@ -188,8 +174,14 @@ public class DarAltaHuespedController {
         String piso = txtPiso.getText();
         String codPostal = txtCodigoPostal.getText();
         String cuit = txtCuit.getText();
-        mostrarPopUp(PopUpType.SUCCESS, "El email ingresado no es válido.");
 
+        if (!validator.validateAll()) {
+            PopUpController.mostrarPopUp(
+                    PopUpType.WARNING,
+                    "Hay campos incompletos o con errores."
+            );
+            return;
+        }
         System.out.println("========================================");
         System.out.println("          DATOS DEL HUÉSPED");
         System.out.println("========================================");
@@ -212,5 +204,11 @@ public class DarAltaHuespedController {
         System.out.printf("%-22s%s%n", "Piso:", piso);
         System.out.printf("%-22s%s%n", "Código Postal:", codPostal);
         System.out.println("----------------------------------------");
+    }
+
+    @FXML
+    private void onCancelarClicked(){
+        HotelPremier.cambiarA("menu");
+
     }
 }
