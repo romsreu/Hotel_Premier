@@ -1,6 +1,6 @@
 package controllers;
 
-import ar.utn.hotel.hotel_premier.HotelPremier;
+import ar.utn.hotel.HotelPremier;
 import enums.PopUpType;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -10,7 +10,6 @@ import static utils.TextManager.*;
 
 import utils.GeorefCache;
 import utils.Validator;
-import utils.Validator.*;
 
 import java.time.LocalDate;
 import java.util.List;
