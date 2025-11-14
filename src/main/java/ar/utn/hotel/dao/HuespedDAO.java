@@ -5,4 +5,6 @@ import ar.utn.hotel.model.Huesped;
 public interface HuespedDAO {
 
     Huesped guardar(Huesped huesped);
+
+    boolean existePorDocumento(String numeroDocumento, String tipoDocumento);
 }

@@ -26,7 +26,15 @@ public class GestorHuesped {
 
     public Huesped cargar(DarAltaHuespedDTO dto) {
 
-        // 1) Buscar o crear Dirección
+        // 1) Verificar si ya existe un huésped con ese documento
+        if (huespedDAO.existePorDocumento(dto.getNumeroDocumento(), dto.getTipoDocumento())) {
+            throw new IllegalArgumentException(
+                    "Ya existe un huésped registrado con el documento " +
+                            dto.getTipoDocumento() + " " + dto.getNumeroDocumento()
+            );
+        }
+
+        // 2) Buscar o crear Dirección
         Direccion dir = direccionDAO.buscarPorDatos(
                 dto.getCalle(),
                 dto.getNumero(),
@@ -53,7 +61,7 @@ public class GestorHuesped {
             direccionDAO.guardar(dir);
         }
 
-        // 2) Crear Huesped directamente (hereda de Persona)
+        // 3) Crear Huesped directamente (hereda de Persona)
         Huesped huesped = new Huesped();
 
         // Datos de Persona (clase padre)
@@ -72,7 +80,7 @@ public class GestorHuesped {
         huesped.setEmail(dto.getEmail());
         huesped.setCuit(dto.getCuit());
 
-        // 3) Guardar Huesped (Hibernate maneja la herencia automáticamente)
+        // 4) Guardar Huesped (Hibernate maneja la herencia automáticamente)
         return huespedDAO.guardar(huesped);
     }
 }
