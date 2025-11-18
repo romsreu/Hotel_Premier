@@ -59,7 +59,7 @@
       </StackPane>
       <HBox alignment="CENTER" layoutX="4.0" layoutY="484.0" prefHeight="100.0" prefWidth="382.0" spacing="70.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <children>
-            <Button fx:id="btnCancelar" mnemonicParsing="false" onAction="#onCancelarClicked" prefHeight="54.0" prefWidth="185.0" styleClass="boton-cancelar" stylesheets="@../../../styles/botones.css" text="CANCELAR">
+            <Button fx:id="btnCancelar" mnemonicParsing="false"  prefHeight="54.0" prefWidth="185.0" styleClass="boton-cancelar" stylesheets="@../../../styles/botones.css" text="CANCELAR">
                <font>
                   <Font name="Lucida Bright Demibold" size="19.0" />
                </font>
@@ -67,7 +67,7 @@
                   <Cursor fx:constant="HAND" />
                </cursor>
             </Button>
-            <Button fx:id="btnBuscar" mnemonicParsing="false" onAction="#onBuscarClicked" prefHeight="54.0" prefWidth="192.0" styleClass="boton-confirmar" stylesheets="@../../../styles/botones.css" text="BUSCAR" textFill="#e1ffcc">
+            <Button fx:id="btnBuscar" mnemonicParsing="false"  prefHeight="54.0" prefWidth="192.0" styleClass="boton-confirmar" stylesheets="@../../../styles/botones.css" text="BUSCAR" textFill="#e1ffcc">
                <font>
                   <Font name="Lucida Bright Demibold" size="19.0" />
                </font>

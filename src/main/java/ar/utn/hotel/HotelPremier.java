@@ -15,11 +15,11 @@ public class HotelPremier extends Application {
         GeorefLoader.cargarTodo();
         SceneManager.precargarEscena("menu", "/views/interfaces/menu-principal.fxml");
         SceneManager.precargarEscena("alta_huesped", "/views/interfaces/dar-alta-huesped.fxml");
-        //SceneManager.precargarEscena("config", "/views/interfaces/configuracion.fxml");
-        //SceneManager.precargarEscena("estadisticas", "/views/interfaces/estadisticas.fxml");
+        SceneManager.precargarEscena("estado_habs", "/views/interfaces/estado_habitaciones/estado_habitaciones2.fxml");
+
 
         // Crear ÚNICA Scene
-        mainScene = new Scene(SceneManager.getRoot("menu"));
+        mainScene = new Scene(SceneManager.getRoot("estado_habs"));
 
         stage.setTitle("Hotel Premier");
         stage.setScene(mainScene);
