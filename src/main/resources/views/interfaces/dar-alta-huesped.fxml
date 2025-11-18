@@ -559,7 +559,7 @@
             </Button>
          </children>
       </HBox>
-      <StackPane layoutY="39.0" prefHeight="75.0" prefWidth="950.0" styleClass="panel-negro-suave" stylesheets="@../../styles/paneles.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+      <StackPane layoutY="40.0" prefHeight="75.0" prefWidth="950.0" styleClass="panel-negro-suave" stylesheets="@../../styles/paneles.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <children>
             <Label styleClass="texto-titulo" stylesheets="@../../styles/textos.css" text="DAR ALTA DE HUÉSPED" textAlignment="CENTER">
                <font>

@@ -12,4 +12,6 @@ module ar.utn.hotel.hotel_premier {
 
     exports ar.utn.hotel;
     exports controllers;
+    exports controllers.estado_habitaciones;
+    opens controllers.estado_habitaciones to javafx.fxml;
 }
