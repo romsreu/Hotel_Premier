@@ -21,4 +21,7 @@ public class MenuPrincipalController {
     }
 
 
+    public void on_buscar_huesped_pressed(ActionEvent actionEvent) {
+        HotelPremier.cambiarA("buscar_huesped1");
+    }
 }

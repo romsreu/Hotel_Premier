@@ -103,7 +103,7 @@
                         <MenuItem fx:id="alta_huesped" mnemonicParsing="false" onAction="#on_alta_huesped_pressed" text="Dar Alta de Huésped" />
                         <MenuItem mnemonicParsing="false" text="Dar Baja de Huésped" />
                         <MenuItem mnemonicParsing="false" text="Modificar Huésped" />
-                        <MenuItem mnemonicParsing="false" text="Buscar Huésped" />
+                        <MenuItem mnemonicParsing="false" onAction="#on_buscar_huesped_pressed" text="Buscar Huésped" />
                      </items>
                      <font>
                         <Font name="Lucida Bright" size="17.0" />
