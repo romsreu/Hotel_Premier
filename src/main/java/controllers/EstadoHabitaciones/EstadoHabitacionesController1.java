@@ -1,4 +1,4 @@
-package controllers.estado_habitaciones;
+package controllers.EstadoHabitaciones;
 
 public class EstadoHabitacionesController1 {
 }

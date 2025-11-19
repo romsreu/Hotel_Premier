@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="600.0" prefWidth="950.0" styleClass="panel-azul-noche" stylesheets="@../../../styles/paneles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.estado_habitaciones.EstadoHabitacionesController2">
+<AnchorPane prefHeight="600.0" prefWidth="950.0" styleClass="panel-azul-noche" stylesheets="@../../../styles/paneles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.EstadoHabitaciones.EstadoHabitacionesController2">
     <children>
         <StackPane layoutX="10.0" layoutY="50.0" prefHeight="75.0" prefWidth="950.0" styleClass="panel-negro-suave" stylesheets="@../../../styles/paneles.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <children>

@@ -234,3 +234,99 @@
 .pagination .right-arrow:hover {
     -fx-background-color: linear-gradient(to bottom, #ffe9b0, #edc676, #c89b3c);
 }
+/* =================================
+   SCROLL PANE — HOTEL PREMIER STYLE
+   ================================= */
+
+/* Contenedor principal del ScrollPane */
+.scroll-pane {
+    -fx-background-color: linear-gradient(to bottom, #fdf8ed, #f5f0e1);
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 6, 0.2, 0, 2);
+}
+
+/* Viewport del contenido */
+.scroll-pane > .viewport {
+    -fx-background-color: linear-gradient(to bottom, #fdf8ed, #f5f0e1);
+}
+
+/* Contenido interno */
+.scroll-pane .content {
+    -fx-background-color: transparent;
+}
+
+/* Barra de scroll vertical */
+.scroll-pane .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-padding: 2;
+}
+
+.scroll-pane .scroll-bar:vertical .track {
+    -fx-background-color: linear-gradient(to right, #e8dcc4, #ded2b8);
+    -fx-background-radius: 6;
+    -fx-border-color: rgba(0,0,0,0.1);
+    -fx-border-radius: 6;
+}
+
+.scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: linear-gradient(to right, #c9ad7a, #e7c375);
+    -fx-background-radius: 5;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0.3, 0, 1);
+}
+
+.scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: linear-gradient(to right, #d5b786, #edc982);
+}
+
+.scroll-pane .scroll-bar:vertical .thumb:pressed {
+    -fx-background-color: linear-gradient(to right, #b39564, #d5b168);
+}
+
+/* Barra de scroll horizontal */
+.scroll-pane .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-padding: 2;
+}
+
+.scroll-pane .scroll-bar:horizontal .track {
+    -fx-background-color: linear-gradient(to bottom, #e8dcc4, #ded2b8);
+    -fx-background-radius: 6;
+    -fx-border-color: rgba(0,0,0,0.1);
+    -fx-border-radius: 6;
+}
+
+.scroll-pane .scroll-bar:horizontal .thumb {
+    -fx-background-color: linear-gradient(to bottom, #c9ad7a, #e7c375);
+    -fx-background-radius: 5;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0.3, 0, 1);
+}
+
+.scroll-pane .scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: linear-gradient(to bottom, #d5b786, #edc982);
+}
+
+.scroll-pane .scroll-bar:horizontal .thumb:pressed {
+    -fx-background-color: linear-gradient(to bottom, #b39564, #d5b168);
+}
+
+/* Botones de incremento/decremento (flechas) - ocultarlos */
+.scroll-pane .scroll-bar .increment-button,
+.scroll-pane .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+}
+
+/* Esquina donde se cruzan las barras */
+.scroll-pane .corner {
+    -fx-background-color: #f5f0e1;
+}
+
+/* Header del Grid dentro del ScrollPane */
+.grid-header {
+    -fx-background-color: linear-gradient(to bottom, #e7c375, #d5b168);
+    -fx-border-color: #c89b3c;
+    -fx-border-width: 0 0 2 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 4, 0.3, 0, 1);
+}
