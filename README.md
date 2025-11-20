@@ -13,3 +13,13 @@ En su estado actual, el sistema permite gestionar huéspedes de manera básica a
 
 ## **Base de datos**
 El sistema utiliza una base PostgreSQL remota en Neon, lo que permite ejecutar y probar el proyecto desde cualquier computadora.
+
+## **Arquitectura**
+Toda la documentación de análisis y diseño del sistema se encuentra centralizada en el repositorio complementario [Hotel-Premier-Architecture](https://github.com/romsreu/Hotel-Premier-Architecture) Allí se incluyen los modelos conceptuales y técnicos que sirvieron como base para la implementación del proyecto, entre ellos:
+
+- Diagramas UML (casos de uso, clases, secuencia, estados)
+- Documentación de entradas/salidas y flujos del sistema
+- Modelos de datos (DER y diagrama de tablas)
+- Diagramas de arquitectura lógica y física
+- Script SQL de creación de la base de datos
+
