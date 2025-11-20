@@ -19,6 +19,8 @@ module ar.utn.hotel.hotel_premier {
     opens controllers to javafx.fxml;
     opens controllers.BuscarHuesped to javafx.fxml;
     opens controllers.EstadoHabitaciones to javafx.fxml;
+    opens controllers.ReservarHabitacion to javafx.fxml;
+    opens controllers.OcuparHabitacion to javafx.fxml;
 
     exports ar.utn.hotel;
     exports controllers;

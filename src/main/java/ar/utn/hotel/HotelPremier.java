@@ -31,6 +31,10 @@ public class HotelPremier extends Application {
         SceneManager.precargarEscena("estado_habs2", "/views/interfaces/estado-habitaciones/estado-habitaciones-2.fxml");
         SceneManager.precargarEscena("buscar_huesped1", "/views/interfaces/buscar-huesped/buscar-huesped-1.fxml");
         SceneManager.precargarEscena("buscar_huesped2", "/views/interfaces/buscar-huesped/buscar-huesped-2.fxml");
+        SceneManager.precargarEscena("reservar_hab1", "/views/interfaces/reservar-habitacion/reservar-habitacion-1.fxml");
+        SceneManager.precargarEscena("reservar_hab2", "/views/interfaces/reservar-habitacion/reservar-habitacion-2.fxml");
+        SceneManager.precargarEscena("ocupar_hab1", "/views/interfaces/ocupar-habitacion/ocupar-habitacion-1.fxml");
+        SceneManager.precargarEscena("ocupar_hab2", "/views/interfaces/ocupar-habitacion/ocupar-habitacion-2.fxml");
     }
 
     public static void cambiarA(String nombreEscena) {
