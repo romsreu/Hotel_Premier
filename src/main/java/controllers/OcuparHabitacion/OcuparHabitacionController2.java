@@ -7,5 +7,6 @@ public class OcuparHabitacionController2 {
     }
 
     public void onAceptarClicked(ActionEvent actionEvent) {
+
     }
 }

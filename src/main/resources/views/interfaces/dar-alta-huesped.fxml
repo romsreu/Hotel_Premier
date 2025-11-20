@@ -488,7 +488,7 @@
                                     <Font name="Lucida Bright Demibold" size="13.0" />
                                  </font>
                               </Label>
-                              <ImageView fx:id="nrotel0" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
+                              <ImageView fx:id="nrotelO" fitHeight="15.0" fitWidth="15.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
                                     <Image url="@../../images/advertencia.png" />
                                  </image>
@@ -501,7 +501,7 @@
                               <Insets right="5.0" />
                            </padding>
                         </HBox>
-                        <TextField fx:id="txtCalle1" promptText="Ingrese la calle" stylesheets="@../../styles/campos.css" />
+                        <TextField fx:id="txtTel" promptText="Ingrese la calle" stylesheets="@../../styles/campos.css" />
                      </children>
                      <GridPane.margin>
                         <Insets left="5.0" right="5.0" />

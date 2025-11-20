@@ -205,6 +205,31 @@ public class TextManager {
             });
         }
     }
+    public static void aplicarMascaraTelefono(TextField tf) {
+        tf.textProperty().addListener((obs, oldText, newText) -> {
+            if (newText == null) return;
+
+            // Solo dígitos
+            String clean = newText.replaceAll("[^0-9]", "");
+
+            // Aplicar máscara: +## #### #####
+            String formatted = "";
+            if (clean.length() > 0) {
+                if (clean.length() <= 2) {
+                    formatted = "+" + clean;
+                } else if (clean.length() <= 6) {
+                    formatted = "+" + clean.substring(0, 2) + " " + clean.substring(2);
+                } else {
+                    formatted = "+" + clean.substring(0, 2) + " " + clean.substring(2, 6) + " " + clean.substring(6);
+                }
+            }
+
+            if (!formatted.equals(newText)) {
+                tf.setText(formatted);
+                tf.positionCaret(formatted.length());
+            }
+        });
+    }
 }
 
 

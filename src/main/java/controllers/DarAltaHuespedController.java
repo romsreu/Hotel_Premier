@@ -5,10 +5,13 @@ import ar.utn.hotel.dto.DarAltaHuespedDTO;
 import ar.utn.hotel.dto.HuespedDTO;
 import ar.utn.hotel.gestor.GestorHuesped;
 import enums.PopUpType;
+import enums.TipoDocumento;
+import enums.TipoIVA;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 
+import static ar.utn.hotel.utils.TextManager.aplicarMascaraTelefono;
 import static utils.TextManager.*;
 
 import utils.GeorefCache;
@@ -24,18 +27,19 @@ public class DarAltaHuespedController {
     @FXML private TextField txtEmail;
     @FXML private TextField txtOcupacion;
     @FXML private TextField txtCuit;
-    @FXML private ComboBox<String> combPosicionIva;
+    @FXML private ComboBox<TipoIVA> combPosicionIva;
     @FXML private TextField txtNumDoc;
     @FXML private TextField txtCalle;
     @FXML private TextField txtNumeroCalle;
     @FXML private TextField txtDepto;
     @FXML private TextField txtPiso;
     @FXML private TextField txtCodigoPostal;
+    @FXML private TextField txtTel;
     @FXML private DatePicker dateNacimiento;
     @FXML private ComboBox<String> comboNacionalidad;
     @FXML private ComboBox<String> comboLocalidad;
     @FXML private ComboBox<String> comboProvincia;
-    @FXML private ComboBox<String> comboTipoDoc;
+    @FXML private ComboBox<TipoDocumento> comboTipoDoc;
     @FXML private ComboBox<String> comboPais;
 
     //Iconos de validación (campos vacios o mal formateados) de cada campo
@@ -55,6 +59,7 @@ public class DarAltaHuespedController {
     @FXML private ImageView numCalleO;
     @FXML private ImageView codPostalO;
     @FXML private ImageView cuitO;
+    @FXML private ImageView nrotelO;
 
     private Validator validator;
     @FXML
@@ -62,17 +67,18 @@ public class DarAltaHuespedController {
         ocultarTodosLosIconos();
         aplicarMayusculas(txtNombre,txtApellido,txtCalle, txtOcupacion, txtEmail);
         aplicarMascaraDNI(txtNumDoc);
+        //aplicarMascaraTelefono(txtTel); arreglar esto después, anda mal la máscara
         aplicarMascaraCUIT(txtCuit);
         limitarCaracteres(40, txtEmail);
-        limitarCaracteres(15, txtNombre, txtApellido, txtCalle, txtOcupacion);
+        limitarCaracteres(15, txtNombre, txtApellido, txtCalle, txtOcupacion, txtTel);
         limitarCaracteres(4, txtNumeroCalle, txtDepto, txtPiso, txtCodigoPostal);
         soloLetras(txtNombre, txtApellido, txtCalle, txtOcupacion);
-        soloNumeros(txtNumeroCalle, txtDepto, txtPiso, txtCodigoPostal);
+        soloNumeros(txtNumeroCalle, txtDepto, txtPiso, txtCodigoPostal, txtTel);
         soloEmail(txtEmail);
 
         LocalDate fechaMinima = LocalDate.now().minusYears(18);
 
-        // Mostrar por defecto hace 18 años (UX)
+        // Mostrar por defecto hace 18 años
         dateNacimiento.setValue(fechaMinima);
 
         // Bloquear TODAS las fechas que te hagan menor de 18
@@ -86,18 +92,10 @@ public class DarAltaHuespedController {
             }
         });
 
-
-
-        // ==========================================
-        // CARGA DE PROVINCIAS DESDE CACHE
-        // ==========================================
         if (GeorefCache.provincias != null) {
             comboProvincia.getItems().setAll(GeorefCache.provincias);
         }
 
-        // ==========================================
-        // CARGA DE LOCALIDADES DESDE CACHE
-        // ==========================================
         comboProvincia.setOnAction(e -> {
             String prov = comboProvincia.getValue();
             if (prov != null) {
@@ -118,15 +116,16 @@ public class DarAltaHuespedController {
         });
 
         comboNacionalidad.getItems().addAll("Argentina", "Uruguaya", "Chilena", "Paraguaya", "Brasileña", "Otra");
-        comboTipoDoc.getItems().addAll("DNI", "Pasaporte", "Cédula", "Otro");
-        comboTipoDoc.setValue("DNI");
-        combPosicionIva.getItems().addAll("RESPONSABLE INSCRIPTO", "MONOTRIBUTISTA", "Otro");
+        comboTipoDoc.getItems().addAll(TipoDocumento.values());
+        comboTipoDoc.setValue(TipoDocumento.DNI);
+        combPosicionIva.getItems().addAll(TipoIVA.values());
         comboPais.getItems().addAll("Argentina");
         comboPais.setValue("Argentina");
 
         validator = new Validator();
         validator.addRule(txtNombre, nombreO).required().minLength(3);
         validator.addRule(txtApellido, apellidoO).required().minLength(3);
+        validator.addRule(txtTel, nrotelO).required();
         validator.addRule(txtEmail, emailO).required().email();
         validator.addRule(comboNacionalidad, nacionalidadO).required();
         validator.addRule(combPosicionIva, posivaO).required();
@@ -163,22 +162,20 @@ public class DarAltaHuespedController {
         cuitO.setVisible(false);
         nacionalidadO.setVisible(false);
         emailO.setVisible(false);
+        nrotelO.setVisible(false);
     }
-
-
-
 
     @FXML
     private void onSiguienteClicked() {
 
         String nombre = txtNombre.getText();
         String apellido = txtApellido.getText();
-//        String telefono = txtTelefono.getText();
+        String telefono = txtTel.getText();
         String email = txtEmail.getText();
-        String tipoDoc = comboTipoDoc.getValue();
+        TipoDocumento tipoDoc = comboTipoDoc.getValue();
         String doc = txtNumDoc.getText();
         String ocupacion = txtOcupacion.getText();
-        String posicionIVA = combPosicionIva.getValue();
+        TipoIVA posicionIVA = combPosicionIva.getValue();
         String fechaNac = (dateNacimiento.getValue() != null) ? dateNacimiento.getValue().toString() : "No especificada";
         String nacionalidad = comboNacionalidad.getValue();
         String pais = comboPais.getValue();
@@ -203,11 +200,11 @@ public class DarAltaHuespedController {
         dto.setNombre(nombre);
         dto.setApellido(apellido);
         dto.setEmail(email);
-        dto.setTipoDocumento(tipoDoc);
+        dto.setTipoDocumento(tipoDoc.name());
         dto.setNumeroDocumento(doc);
         dto.setOcupacion(ocupacion);
-        dto.setTelefono("12345678");
-        dto.setPosicionIVA(posicionIVA);
+        dto.setTelefono(telefono);
+        dto.setPosicionIVA(posicionIVA.name());
         dto.setFechaNacimiento(fechaNac);
         dto.setNacionalidad(nacionalidad);
         dto.setOcupacion(ocupacion);
