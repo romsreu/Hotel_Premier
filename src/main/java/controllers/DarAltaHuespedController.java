@@ -221,9 +221,52 @@ public class DarAltaHuespedController {
     }
 
     private void guardarYMostrarDatos(DarAltaHuespedDTO dto) {
-        GestorHuesped gestor = new GestorHuesped();
-        gestor.cargar(dto);
-        mostrarResumenHuesped(dto);
+        try {
+            GestorHuesped gestor = new GestorHuesped();
+            gestor.cargar(dto);
+
+            mostrarPopUpExito(dto);
+            mostrarResumenHuesped(dto);
+
+        } catch (IllegalArgumentException e) {
+            mostrarPopUpDNIDuplicado(dto.getNumeroDocumento());
+        } catch (Exception e) {
+            mostrarPopUpError(e.getMessage());
+        }
+    }
+
+    private void mostrarPopUpExito(DarAltaHuespedDTO dto) {
+        String mensaje = String.format(
+                "El huésped '%s' '%s' '%s' ha sido cargado satisfactoriamente al sistema",
+                dto.getNombre(),
+                dto.getApellido(),
+                formatearDNI(dto.getNumeroDocumento())
+        );
+        PopUpController.mostrarPopUp(PopUpType.SUCCESS, mensaje);
+    }
+
+    private void mostrarPopUpDNIDuplicado(String numeroDocumento) {
+        String mensaje = String.format(
+                "El DNI %s ya se encuentra en el sistema",
+                formatearDNI(numeroDocumento)
+        );
+        PopUpController.mostrarPopUp(PopUpType.WARNING, mensaje);
+    }
+
+    private void mostrarPopUpError(String mensaje) {
+        PopUpController.mostrarPopUp(PopUpType.ERROR, "Error al cargar el huésped: " + mensaje);
+    }
+
+    private String formatearDNI(String dni) {
+        if (dni == null || dni.isEmpty()) return dni;
+
+        dni = dni.replaceAll("[^0-9]", "");
+
+        if (dni.length() == 8) {
+            return dni.substring(0, 2) + "." + dni.substring(2, 5) + "." + dni.substring(5);
+        }
+
+        return dni;
     }
 
     private void mostrarResumenHuesped(DarAltaHuespedDTO dto) {
