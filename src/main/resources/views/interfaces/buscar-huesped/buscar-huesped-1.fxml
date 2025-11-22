@@ -33,7 +33,7 @@
                                         <Font name="Lucida Bright" size="16.0" />
                                     </font>
                                 </Label>
-                                <TextField fx:id="tfNombre" maxWidth="500.0" promptText="Ingrese el Nombre" stylesheets="@../../../styles/campos.css">
+                                <TextField fx:id="txtNombre" maxWidth="500.0" promptText="Ingrese el Nombre" stylesheets="@../../../styles/campos.css">
                                     <cursor>
                                         <Cursor fx:constant="HAND" />
                                     </cursor>
@@ -47,7 +47,7 @@
                                         <Font name="Lucida Bright" size="16.0" />
                                     </font>
                                 </Label>
-                                <TextField fx:id="tfApellido" maxWidth="500.0" promptText="Ingrese el Apellido" stylesheets="@../../../styles/campos.css">
+                                <TextField fx:id="txtApellido" maxWidth="500.0" promptText="Ingrese el Apellido" stylesheets="@../../../styles/campos.css">
                                     <cursor>
                                         <Cursor fx:constant="HAND" />
                                     </cursor>
@@ -70,7 +70,7 @@
                         </VBox>
                         <VBox alignment="CENTER" maxWidth="500.0" spacing="8.0">
                             <children>
-                                <TextField fx:id="tfNumeroDocumento" maxWidth="500.0" promptText="Ingrese el número de DNI" stylesheets="@../../../styles/campos.css">
+                                <TextField fx:id="txtNumeroDocumento" maxWidth="500.0" promptText="Ingrese el número de DNI" stylesheets="@../../../styles/campos.css">
                                     <cursor>
                                         <Cursor fx:constant="HAND" />
                                     </cursor>
@@ -91,7 +91,7 @@
                         <Cursor fx:constant="HAND" />
                     </cursor>
                 </Button>
-                <Button fx:id="btnBuscar" mnemonicParsing="false" prefHeight="54.0" prefWidth="192.0" styleClass="boton-confirmar" stylesheets="@../../../styles/botones.css" text="BUSCAR" textFill="#e1ffcc">
+                <Button fx:id="btnBuscar" mnemonicParsing="false" onAction="#onBuscarClicked" prefHeight="54.0" prefWidth="192.0" styleClass="boton-confirmar" stylesheets="@../../../styles/botones.css" text="BUSCAR" textFill="#e1ffcc">
                     <font>
                         <Font name="Lucida Bright Demibold" size="19.0" />
                     </font>
