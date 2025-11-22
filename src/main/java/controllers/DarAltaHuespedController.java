@@ -42,7 +42,6 @@ public class DarAltaHuespedController {
     @FXML private ComboBox<TipoDocumento> comboTipoDoc;
     @FXML private ComboBox<String> comboPais;
 
-    //Iconos de validación (campos vacios o mal formateados) de cada campo
     @FXML private ImageView nombreO;
     @FXML private ImageView apellidoO;
     @FXML private ImageView nacionalidadO;
@@ -62,49 +61,73 @@ public class DarAltaHuespedController {
     @FXML private ImageView nrotelO;
 
     private Validator validator;
-    @FXML
+
     public void initialize() {
         ocultarTodosLosIconos();
-        aplicarMayusculas(txtNombre,txtApellido,txtCalle, txtOcupacion, txtEmail);
+        configurarFormatoDeTexto();
+        configurarDatePicker();
+        cargarDatosEnComboBoxes();
+        agregarValidacionesDeCampos();
+    }
+
+    // ==================== CONFIGURACIÓN INICIAL ====================
+
+    private void configurarFormatoDeTexto() {
+        aplicarMayusculas(txtNombre, txtApellido, txtCalle, txtOcupacion, txtEmail);
+        aplicarMascaras();
+        limitarLongitudDeCampos();
+        aplicarFiltrosDeEntrada();
+    }
+
+    private void aplicarMascaras() {
         aplicarMascaraDNI(txtNumDoc);
-        //aplicarMascaraTelefono(txtTel); arreglar esto después, anda mal la máscara
         aplicarMascaraCUIT(txtCuit);
+    }
+
+    private void limitarLongitudDeCampos() {
         limitarCaracteres(40, txtEmail);
         limitarCaracteres(15, txtNombre, txtApellido, txtCalle, txtOcupacion, txtTel);
         limitarCaracteres(4, txtNumeroCalle, txtDepto, txtPiso, txtCodigoPostal);
+    }
+
+    private void aplicarFiltrosDeEntrada() {
         soloLetras(txtNombre, txtApellido, txtCalle, txtOcupacion);
         soloNumeros(txtNumeroCalle, txtDepto, txtPiso, txtCodigoPostal, txtTel);
         soloEmail(txtEmail);
+    }
 
+    private void configurarDatePicker() {
         LocalDate fechaMinima = LocalDate.now().minusYears(18);
-
-        // Mostrar por defecto hace 18 años
         dateNacimiento.setValue(fechaMinima);
+        bloquearFechasInvalidasEnDatePicker(fechaMinima);
+    }
 
-        // Bloquear TODAS las fechas que te hagan menor de 18
+    private void bloquearFechasInvalidasEnDatePicker(LocalDate fechaMinima) {
         dateNacimiento.setDayCellFactory(picker -> new DateCell() {
             @Override
             public void updateItem(LocalDate date, boolean empty) {
                 super.updateItem(date, empty);
-
-                // Bloquear fechas posteriores a (hoy - 18 años)
                 setDisable(empty || date.isAfter(fechaMinima));
             }
         });
+    }
 
+    private void cargarDatosEnComboBoxes() {
+        cargarProvincias();
+        configurarComboBoxProvincia();
+        cargarNacionalidades();
+        cargarTiposDocumento();
+        cargarTiposIVA();
+        cargarPaises();
+    }
+
+    private void cargarProvincias() {
         if (GeorefCache.provincias != null) {
             comboProvincia.getItems().setAll(GeorefCache.provincias);
         }
+    }
 
-        comboProvincia.setOnAction(e -> {
-            String prov = comboProvincia.getValue();
-            if (prov != null) {
-                comboLocalidad.getItems().setAll(
-                        GeorefCache.localidadesPorProvincia.getOrDefault(prov, List.of())
-                );
-            }
-        });
-
+    private void configurarComboBoxProvincia() {
         comboProvincia.setOnAction(e -> {
             String prov = comboProvincia.getValue();
             if (prov != null && !prov.isBlank()) {
@@ -114,36 +137,162 @@ public class DarAltaHuespedController {
                 comboLocalidad.setDisable(false);
             }
         });
+    }
 
-        comboNacionalidad.getItems().addAll("Argentina", "Uruguaya", "Chilena", "Paraguaya", "Brasileña", "Otra");
+    private void cargarNacionalidades() {
+        comboNacionalidad.getItems().addAll(
+                "Argentina", "Uruguaya", "Chilena", "Paraguaya", "Brasileña", "Otra"
+        );
+    }
+
+    private void cargarTiposDocumento() {
         comboTipoDoc.getItems().addAll(TipoDocumento.values());
         comboTipoDoc.setValue(TipoDocumento.DNI);
+    }
+
+    private void cargarTiposIVA() {
         combPosicionIva.getItems().addAll(TipoIVA.values());
+    }
+
+    private void cargarPaises() {
         comboPais.getItems().addAll("Argentina");
         comboPais.setValue("Argentina");
+    }
 
+    // ==================== EVENTOS DE BOTONES ====================
+
+    @FXML
+    private void onSiguienteClicked() {
+        if (!validator.validateAll()) {
+            PopUpController.mostrarPopUp(
+                    PopUpType.WARNING,
+                    "Hay campos incompletos o con errores."
+            );
+            return;
+        }
+
+        DarAltaHuespedDTO dto = crearDTODesdeFormulario();
+        guardarYMostrarDatos(dto);
+    }
+
+    @FXML
+    private void onCancelarClicked() {
+        HotelPremier.cambiarA("menu");
+    }
+
+    // ==================== LÓGICA DE DATOS ====================
+
+    private DarAltaHuespedDTO crearDTODesdeFormulario() {
+        DarAltaHuespedDTO dto = new DarAltaHuespedDTO();
+
+        // Datos personales
+        dto.setNombre(txtNombre.getText());
+        dto.setApellido(txtApellido.getText());
+        dto.setEmail(txtEmail.getText());
+        dto.setTelefono(txtTel.getText());
+        dto.setOcupacion(txtOcupacion.getText());
+
+        // Datos de identificación
+        dto.setTipoDocumento(comboTipoDoc.getValue().name());
+        dto.setNumeroDocumento(txtNumDoc.getText());
+        dto.setCuit(txtCuit.getText());
+        dto.setPosicionIVA(combPosicionIva.getValue().name());
+
+        // Datos de nacimiento
+        dto.setFechaNacimiento(obtenerFechaNacimiento());
+        dto.setNacionalidad(comboNacionalidad.getValue());
+
+        // Datos de dirección
+        dto.setPais(comboPais.getValue());
+        dto.setProvincia(comboProvincia.getValue());
+        dto.setLocalidad(comboLocalidad.getValue());
+        dto.setCalle(txtCalle.getText());
+        dto.setNumero(txtNumeroCalle.getText());
+        dto.setDepto(txtDepto.getText());
+        dto.setPiso(txtPiso.getText());
+        dto.setCodPostal(txtCodigoPostal.getText());
+
+        return dto;
+    }
+
+    private String obtenerFechaNacimiento() {
+        return (dateNacimiento.getValue() != null) ?
+                dateNacimiento.getValue().toString() : "No especificada";
+    }
+
+    private void guardarYMostrarDatos(DarAltaHuespedDTO dto) {
+        GestorHuesped gestor = new GestorHuesped();
+        gestor.cargar(dto);
+        mostrarResumenHuesped(dto);
+    }
+
+    private void mostrarResumenHuesped(DarAltaHuespedDTO dto) {
+        System.out.println("========================================");
+        System.out.println("          DATOS DEL HUÉSPED");
+        System.out.println("========================================");
+        System.out.printf("%-22s%s%n", "Nombre:", dto.getNombre());
+        System.out.printf("%-22s%s%n", "Apellido:", dto.getApellido());
+        System.out.printf("%-22s%s%n", "Email:", dto.getEmail());
+        System.out.printf("%-22s%s%n", "Tipo de Documento:", dto.getTipoDocumento());
+        System.out.printf("%-22s%s%n", "Número de Documento:", dto.getNumeroDocumento());
+        System.out.printf("%-22s%s%n", "CUIT:", dto.getCuit());
+        System.out.printf("%-22s%s%n", "Ocupación:", dto.getOcupacion());
+        System.out.printf("%-22s%s%n", "Posición frente al IVA:", dto.getPosicionIVA());
+        System.out.printf("%-22s%s%n", "Fecha de Nacimiento:", dto.getFechaNacimiento());
+        System.out.printf("%-22s%s%n", "Nacionalidad:", dto.getNacionalidad());
+        System.out.printf("%-22s%s%n", "País:", dto.getPais());
+        System.out.printf("%-22s%s%n", "Provincia:", dto.getProvincia());
+        System.out.printf("%-22s%s%n", "Localidad:", dto.getLocalidad());
+        System.out.printf("%-22s%s%n", "Calle:", dto.getCalle());
+        System.out.printf("%-22s%s%n", "Número:", dto.getNumero());
+        System.out.printf("%-22s%s%n", "Depto:", dto.getDepto());
+        System.out.printf("%-22s%s%n", "Piso:", dto.getPiso());
+        System.out.printf("%-22s%s%n", "Código Postal:", dto.getCodPostal());
+        System.out.println("----------------------------------------");
+    }
+
+    // ==================== VALIDACIÓN ====================
+
+    private void agregarValidacionesDeCampos() {
         validator = new Validator();
+
+        // Validaciones de texto
+        validarCamposTexto();
+
+        // Validaciones de selección
+        validarCamposSeleccion();
+
+        // Validaciones de documentos
+        validarDocumentos();
+    }
+
+    private void validarCamposTexto() {
         validator.addRule(txtNombre, nombreO).required().minLength(3);
         validator.addRule(txtApellido, apellidoO).required().minLength(3);
         validator.addRule(txtTel, nrotelO).required();
         validator.addRule(txtEmail, emailO).required().email();
+        validator.addRule(txtCalle, calleO).required();
+        validator.addRule(txtNumeroCalle, numCalleO).required();
+        validator.addRule(txtCodigoPostal, codPostalO).required();
+        validator.addRule(txtOcupacion, ocupacionO).required();
+    }
+
+    private void validarCamposSeleccion() {
         validator.addRule(comboNacionalidad, nacionalidadO).required();
         validator.addRule(combPosicionIva, posivaO).required();
         validator.addRule(comboProvincia, provinciaO).required();
         validator.addRule(comboLocalidad, localidadO).required();
         validator.addRule(comboPais, paisO).required();
-        validator.addRule(dateNacimiento, fechanacO).required().mayorDe18();
-        validator.addRule(dateNacimiento, fechanacO).required();
-        validator.addRule(txtCalle, calleO).required();
-        validator.addRule(txtNumeroCalle, numCalleO).required();
-        validator.addRule(txtCodigoPostal, codPostalO).required();
-        validator.addRule(txtOcupacion, ocupacionO).required();
         validator.addRule(comboTipoDoc, tipodniO).required();
-        validator.addRule(txtNumDoc, numdniO).required();
-        validator.addRule(txtCuit, cuitO).required().cuitCoincideCon(txtNumDoc);
-        validator.addRule(txtNumDoc, numdniO).required().dni();
-
     }
+
+    private void validarDocumentos() {
+        validator.addRule(dateNacimiento, fechanacO).required().mayorDe18();
+        validator.addRule(txtNumDoc, numdniO).required().dni();
+        validator.addRule(txtCuit, cuitO).required().cuitCoincideCon(txtNumDoc);
+    }
+
+    // ==================== UTILIDADES ====================
 
     private void ocultarTodosLosIconos() {
         calleO.setVisible(false);
@@ -163,94 +312,5 @@ public class DarAltaHuespedController {
         nacionalidadO.setVisible(false);
         emailO.setVisible(false);
         nrotelO.setVisible(false);
-    }
-
-    @FXML
-    private void onSiguienteClicked() {
-
-        String nombre = txtNombre.getText();
-        String apellido = txtApellido.getText();
-        String telefono = txtTel.getText();
-        String email = txtEmail.getText();
-        TipoDocumento tipoDoc = comboTipoDoc.getValue();
-        String doc = txtNumDoc.getText();
-        String ocupacion = txtOcupacion.getText();
-        TipoIVA posicionIVA = combPosicionIva.getValue();
-        String fechaNac = (dateNacimiento.getValue() != null) ? dateNacimiento.getValue().toString() : "No especificada";
-        String nacionalidad = comboNacionalidad.getValue();
-        String pais = comboPais.getValue();
-        String provincia = comboProvincia.getValue();
-        String localidad = comboLocalidad.getValue();
-        String calle = txtCalle.getText();
-        String nroCalle = txtNumeroCalle.getText();
-        String depto = txtDepto.getText();
-        String piso = txtPiso.getText();
-        String codPostal = txtCodigoPostal.getText();
-        String cuit = txtCuit.getText();
-
-        if (!validator.validateAll()) {
-            PopUpController.mostrarPopUp(
-                    PopUpType.WARNING,
-                    "Hay campos incompletos o con errores."
-            );
-            return;
-        }
-
-        DarAltaHuespedDTO dto = new DarAltaHuespedDTO();
-        dto.setNombre(nombre);
-        dto.setApellido(apellido);
-        dto.setEmail(email);
-        dto.setTipoDocumento(tipoDoc.name());
-        dto.setNumeroDocumento(doc);
-        dto.setOcupacion(ocupacion);
-        dto.setTelefono(telefono);
-        dto.setPosicionIVA(posicionIVA.name());
-        dto.setFechaNacimiento(fechaNac);
-        dto.setNacionalidad(nacionalidad);
-        dto.setOcupacion(ocupacion);
-        dto.setDepto(depto);
-        dto.setPais(pais);
-        dto.setProvincia(provincia);
-        dto.setLocalidad(localidad);
-        dto.setCalle(calle);
-        dto.setNumero(nroCalle);
-        dto.setDepto(depto);
-        dto.setPiso(piso);
-        dto.setCodPostal(codPostal);
-        dto.setCuit(cuit);
-
-
-        GestorHuesped gestor = new GestorHuesped();
-        gestor.cargar(dto);
-
-
-        System.out.println("========================================");
-        System.out.println("          DATOS DEL HUÉSPED");
-        System.out.println("========================================");
-        System.out.printf("%-22s%s%n", "Nombre:", nombre);
-        System.out.printf("%-22s%s%n", "Apellido:", apellido);
-        System.out.printf("%-22s%s%n", "Email:", email);
-        System.out.printf("%-22s%s%n", "Tipo de Documento:", tipoDoc);
-        System.out.printf("%-22s%s%n", "Número de Documento:", doc);
-        System.out.printf("%-22s%s%n", "CUIT:", cuit);
-        System.out.printf("%-22s%s%n", "Ocupación:", ocupacion);
-        System.out.printf("%-22s%s%n", "Posición frente al IVA:", posicionIVA);
-        System.out.printf("%-22s%s%n", "Fecha de Nacimiento:", fechaNac);
-        System.out.printf("%-22s%s%n", "Nacionalidad:", nacionalidad);
-        System.out.printf("%-22s%s%n", "País:", pais);
-        System.out.printf("%-22s%s%n", "Provincia:", provincia);
-        System.out.printf("%-22s%s%n", "Localidad:", localidad);
-        System.out.printf("%-22s%s%n", "Calle:", calle);
-        System.out.printf("%-22s%s%n", "Número:", nroCalle);
-        System.out.printf("%-22s%s%n", "Depto:", depto);
-        System.out.printf("%-22s%s%n", "Piso:", piso);
-        System.out.printf("%-22s%s%n", "Código Postal:", codPostal);
-        System.out.println("----------------------------------------");
-    }
-
-    @FXML
-    private void onCancelarClicked(){
-        HotelPremier.cambiarA("menu");
-
     }
 }
