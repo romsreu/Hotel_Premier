@@ -1,12 +1,17 @@
 package ar.utn.hotel;
 
+import ar.utn.hotel.dto.BuscarHuespedDTO;
+import ar.utn.hotel.gestor.GestorHuesped;
+import ar.utn.hotel.model.Huesped;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import utils.GeorefLoader;
 import utils.SceneManager;
 
-public class HotelPremier extends Application {
+import java.util.List;
+
+public class  HotelPremier extends Application {
 
     private static Scene mainScene;
 

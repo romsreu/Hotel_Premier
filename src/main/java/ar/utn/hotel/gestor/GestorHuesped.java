@@ -4,8 +4,11 @@ import ar.utn.hotel.dao.DireccionDAO;
 import ar.utn.hotel.dao.HuespedDAO;
 import ar.utn.hotel.dao.impl.DireccionDAOImpl;
 import ar.utn.hotel.dao.impl.HuespedDAOImpl;
+import ar.utn.hotel.dto.BuscarHuespedDTO;
 import ar.utn.hotel.dto.DarAltaHuespedDTO;
 import ar.utn.hotel.model.*;
+
+import java.util.List;
 
 public class GestorHuesped {
 
@@ -82,5 +85,18 @@ public class GestorHuesped {
 
         // 4) Guardar Huesped (Hibernate maneja la herencia automáticamente)
         return huespedDAO.guardar(huesped);
+    }
+
+    public List<Huesped> buscarHuesped(BuscarHuespedDTO dto) {
+        // Validar que al menos un criterio esté presente
+        if ((dto.getNombre() == null || dto.getNombre().trim().isEmpty()) &&
+                (dto.getApellido() == null || dto.getApellido().trim().isEmpty()) &&
+                (dto.getTipoDocumento() == null || dto.getTipoDocumento().trim().isEmpty()) &&
+                (dto.getNumeroDocumento() == null || dto.getNumeroDocumento().trim().isEmpty())) {
+
+            throw new IllegalArgumentException("Debe proporcionar al menos un criterio de búsqueda");
+        }
+
+        return huespedDAO.buscarHuesped(dto);
     }
 }
