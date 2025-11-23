@@ -1,7 +1,7 @@
 package enums;
 
-public enum EstadoHab {
-    LIBRE,
+public enum EstadoHabitacion {
+    DISPONIBLE,
     RESERVADA,
     MANTENIMIENTO
 }

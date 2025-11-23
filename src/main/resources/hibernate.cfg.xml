@@ -33,7 +33,7 @@
         <mapping class="ar.utn.hotel.model.Persona"/>
         <mapping class="ar.utn.hotel.model.Direccion"/>
         <mapping class="ar.utn.hotel.model.Huesped"/>
-
-
+        <mapping class="ar.utn.hotel.model.Habitacion"/>
+        <mapping class="ar.utn.hotel.model.Reserva"/>
     </session-factory>
 </hibernate-configuration>

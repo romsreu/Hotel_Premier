@@ -1,26 +1,29 @@
 package ar.utn.hotel.dto;
 
-import jakarta.persistence.*;
+import enums.EstadoHabitacion;
 import lombok.*;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "habitacion")
+@Builder
 public class HabitacionDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer idHabitacion;
-
-    private String numero;
+    private Integer numero;
     private String tipo;
-    private boolean ocupada;
+    private Double costoNoche;
 
-    @ManyToOne
-    @JoinColumn(name = "id_reserva")
-    private ReservaDTO reserva;
+    @Builder.Default
+    private EstadoHabitacion estado = EstadoHabitacion.DISPONIBLE;
 
+    @Override
+    public String toString() {
+        return "HabitacionDTO{" +
+                "numero=" + numero +
+                ", tipo='" + tipo + '\'' +
+                ", costoNoche=" + costoNoche +
+                ", estado=" + estado +
+                '}';
+    }
 }
