@@ -33,13 +33,13 @@
                                 <Font size="16.0" />
                             </font>
                         </Label>
-                        <Label styleClass="texto-perla" stylesheets="@../../../styles/textos.css" text="01/11/2024">
+                        <Label fx:id="lbFechaDesde" styleClass="texto-perla" stylesheets="@../../../styles/textos.css" text="01/11/2024">
                             <font>
                                 <Font size="16.0" />
                             </font>
                         </Label>
                         <Separator prefHeight="7.0" prefWidth="14.0" />
-                        <Label styleClass="texto-perla" stylesheets="@../../../styles/textos.css" text="30/11/2024">
+                        <Label fx:id="lbFechaHasta" styleClass="texto-perla" stylesheets="@../../../styles/textos.css" text="30/11/2024">
                             <font>
                                 <Font size="16.0" />
                             </font>

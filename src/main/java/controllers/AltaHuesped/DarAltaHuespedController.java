@@ -1,8 +1,9 @@
-package controllers;
+package controllers.AltaHuesped;
 
 import ar.utn.hotel.HotelPremier;
 import ar.utn.hotel.dto.DarAltaHuespedDTO;
 import ar.utn.hotel.gestor.GestorHuesped;
+import controllers.PopUp.PopUpController;
 import enums.PopUpType;
 import enums.TipoDocumento;
 import enums.TipoIVA;

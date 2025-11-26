@@ -2,7 +2,7 @@ package controllers.BuscarHuesped;
 
 import ar.utn.hotel.HotelPremier;
 import ar.utn.hotel.model.Huesped;
-import controllers.PopUpController;
+import controllers.PopUp.PopUpController;
 import enums.PopUpType;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

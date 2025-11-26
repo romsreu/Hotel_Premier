@@ -4,7 +4,7 @@ import ar.utn.hotel.HotelPremier;
 import ar.utn.hotel.dto.BuscarHuespedDTO;
 import ar.utn.hotel.gestor.GestorHuesped;
 import ar.utn.hotel.model.Huesped;
-import controllers.PopUpController;
+import controllers.PopUp.PopUpController;
 import enums.PopUpType;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;

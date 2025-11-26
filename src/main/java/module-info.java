@@ -16,14 +16,18 @@ module ar.utn.hotel.hotel_premier {
     opens ar.utn.hotel.dto to org.hibernate.orm.core;
     opens ar.utn.hotel.dao to org.hibernate.orm.core;
     opens ar.utn.hotel to javafx.fxml;
-    opens controllers to javafx.fxml;
     opens controllers.BuscarHuesped to javafx.fxml;
     opens controllers.EstadoHabitaciones to javafx.fxml;
     opens controllers.ReservarHabitacion to javafx.fxml;
     opens controllers.OcuparHabitacion to javafx.fxml;
 
     exports ar.utn.hotel;
-    exports controllers;
     exports controllers.EstadoHabitaciones;
+    exports controllers.AltaHuesped;
+    opens controllers.AltaHuesped to javafx.fxml;
+    exports controllers.MenuPrincipal;
+    opens controllers.MenuPrincipal to javafx.fxml;
+    exports controllers.PopUp;
+    opens controllers.PopUp to javafx.fxml;
 
 }

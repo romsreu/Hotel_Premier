@@ -8,7 +8,7 @@
 
 <AnchorPane fx:id="root" prefWidth="350" prefHeight="180"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="controllers.PopUpController">
+            fx:controller="controllers.PopUp.PopUpController">
 
     <VBox spacing="15" alignment="CENTER" layoutX="0" layoutY="0"
           prefWidth="350" prefHeight="180">

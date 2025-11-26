@@ -25,6 +25,8 @@ public class EstadoHabitacionesController2 {
     @FXML private Button btnVolver;
     @FXML private Button btnConfirmar;
     @FXML private TabPane tabPane;
+    @FXML private Label lbFechaDesde;
+    @FXML private Label lbFechaHasta;
     @FXML private Label lblTitulo; // Opcional
 
     // Referencias a los GridPanes de cada tab
@@ -68,6 +70,10 @@ public class EstadoHabitacionesController2 {
         fechaInicio = DataTransfer.getFechaDesdeEstadoHabitaciones();
         fechaFin = DataTransfer.getFechaHastaEstadoHabitaciones();
         contexto = DataTransfer.getContextoEstadoHabitaciones();
+
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        lbFechaDesde.setText(fechaInicio.format(formato));
+        lbFechaHasta.setText(fechaFin.format(formato));
 
         // Validar que se recibieron los datos
         if (fechaInicio == null || fechaFin == null || contexto == null) {

@@ -20,7 +20,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane fx:id="rootPane" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="950.0" styleClass="fondo-petroleo" stylesheets="@../../../styles/fondos.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MenuPrincipalController">
+<AnchorPane fx:id="rootPane" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="950.0" styleClass="fondo-petroleo" stylesheets="@../../../styles/fondos.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MenuPrincipal.MenuPrincipalController">
    <children>
       <StackPane layoutX="323.2" layoutY="139.2" prefHeight="461.0" prefWidth="627.0" stylesheets="@../../../styles/fondos.css" AnchorPane.bottomAnchor="80.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="50.0">
          <children>
@@ -172,13 +172,13 @@
             </HBox>
             <HBox alignment="CENTER" layoutX="20.0" layoutY="10.0" prefHeight="29.0" prefWidth="166.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="20.0">
                <children>
-                  <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="07/11/2025" wrappingWidth="102.80001831054688">
+                  <Text fx:id="fechaId" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="07/11/2025" wrappingWidth="102.80001831054688">
                      <font>
                         <Font name="Lucida Bright" size="17.0" />
                      </font>
                   </Text>
                   <Line endX="869.0" endY="47.5859375" startX="869.0" startY="20.0" stroke="WHITE" />
-                  <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="21:30" textAlignment="CENTER" wrappingWidth="51.5999755859375">
+                  <Text fx:id="horaId" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="21:30" textAlignment="CENTER" wrappingWidth="76.5999755859375">
                      <font>
                         <Font name="Lucida Bright" size="17.0" />
                      </font>

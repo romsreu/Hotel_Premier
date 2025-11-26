@@ -1,4 +1,4 @@
-package controllers;
+package controllers.PopUp;
 
 import enums.PopUpType;
 import javafx.animation.FadeTransition;
