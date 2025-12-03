@@ -1,6 +1,8 @@
 package controllers.EstadoHabitaciones;
 
 import ar.utn.hotel.HotelPremier;
+import ar.utn.hotel.dao.EstadoHabitacionDAO;
+import ar.utn.hotel.dao.impl.EstadoHabitacionDAOImpl;
 import ar.utn.hotel.dao.impl.HabitacionDAOImpl;
 import ar.utn.hotel.model.Habitacion;
 import enums.ContextoEstadoHabitaciones;
@@ -12,7 +14,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.Cursor;
 import utils.DataTransfer;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -63,7 +64,8 @@ public class EstadoHabitacionesController2 {
 
     @FXML
     public void initialize() {
-        habitacionDAO = new HabitacionDAOImpl();
+        EstadoHabitacionDAO estadoHabitacionDAO = new EstadoHabitacionDAOImpl();
+        habitacionDAO = new HabitacionDAOImpl(estadoHabitacionDAO);
         celdasSeleccionadas = new HashSet<>();
 
         // Obtener datos del DataTransfer

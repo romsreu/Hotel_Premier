@@ -1,7 +1,7 @@
 package ar.utn.hotel.dao.impl;
 import ar.utn.hotel.dao.PersonaDAO;
 import ar.utn.hotel.model.Persona;
-import utils.HibernateUtil;
+import ar.utn.hotel.utils.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
