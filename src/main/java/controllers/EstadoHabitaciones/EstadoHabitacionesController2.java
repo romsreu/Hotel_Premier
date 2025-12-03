@@ -6,8 +6,10 @@ import ar.utn.hotel.dao.impl.EstadoHabitacionDAOImpl;
 import ar.utn.hotel.dao.impl.HabitacionDAOImpl;
 import ar.utn.hotel.model.Habitacion;
 import ar.utn.hotel.model.RegistroEstadoHabitacion;
+import controllers.PopUp.PopUpController;
 import enums.ContextoEstadoHabitaciones;
 import enums.EstadoHabitacion;
+import enums.PopUpType;
 import enums.TipoHabitacion;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -386,17 +388,21 @@ public class EstadoHabitacionesController2 {
     }
 
     private void handleCeldaClickInfo(LocalDate fecha, Habitacion habitacion, enums.EstadoHabitacion estado) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Información de Habitación");
-        alert.setHeaderText(habitacion.getTipo().getDescripcion() + " #" + habitacion.getNumero());
-        alert.setContentText(String.format(
-                "Fecha: %s\nEstado: %s\nCapacidad: %d personas\nCosto por noche: $%.2f",
+        String mensaje = String.format(
+                "%s #%d\n\n" +
+                        "Fecha: %s\n" +
+                        "Estado: %s\n" +
+                        "Capacidad: %d personas\n" +
+                        "Costo por noche: $%.2f",
+                habitacion.getTipo().getDescripcion(),
+                habitacion.getNumero(),
                 fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
                 estado.name(),
                 habitacion.getTipo().getCapacidad(),
                 habitacion.getTipo().getCostoNoche()
-        ));
-        alert.showAndWait();
+        );
+
+        mostrarInfo(mensaje);
     }
 
     private void handleCeldaClickSeleccion(StackPane celda, LocalDate fecha,
@@ -458,70 +464,50 @@ public class EstadoHabitacionesController2 {
     }
 
     private void confirmarReserva() {
-        // TODO: Implementar lógica de reserva
-        StringBuilder mensaje = new StringBuilder("Habitaciones seleccionadas para reservar:\n\n");
-        for (CeldaSeleccionada celda : celdasSeleccionadas) {
-            mensaje.append(String.format("Habitación %d - Fecha: %s\n",
-                    celda.numeroHabitacion,
-                    celda.fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))));
-        }
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmar Reserva");
-        alert.setHeaderText("¿Desea confirmar la reserva?");
-        alert.setContentText(mensaje.toString());
+        HotelPremier.cambiarA("reservar_hab1");
+        mostrarExito("Reserva confirmada exitosamente");
 
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                // Aquí llamarías a tu lógica de negocio para reservar
-                mostrarExito("Reserva confirmada exitosamente");
-                HotelPremier.cambiarA("menu");
-            }
-        });
     }
 
     private void confirmarOcupacion() {
-        // TODO: Implementar lógica de ocupación
         CeldaSeleccionada celda = celdasSeleccionadas.iterator().next();
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmar Ocupación");
-        alert.setHeaderText("¿Desea confirmar la ocupación?");
-        alert.setContentText(String.format("Habitación %d\nFecha: %s",
+        String mensaje = String.format(
+                "¿Desea confirmar la ocupación?\n\nHabitación: %d\nFecha: %s",
                 celda.numeroHabitacion,
-                celda.fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))));
+                celda.fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+        );
 
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                // Aquí llamarías a tu lógica de negocio para ocupar
-                mostrarExito("Ocupación confirmada exitosamente");
-                HotelPremier.cambiarA("menu");
-            }
-        });
+        PopUpController.mostrarPopUpConCallback(
+                PopUpType.CONFIRMATION,
+                mensaje,
+                confirmado -> {
+                    if (confirmado) {
+                        // TODO: Aquí llamarías a tu lógica de negocio para ocupar
+                        // Ejemplo: habitacionDAO.ocuparHabitaciones(...)
+
+                        mostrarExito("Ocupación confirmada exitosamente");
+                        HotelPremier.cambiarA("menu");
+                    }
+                }
+        );
     }
 
     private void mostrarError(String mensaje) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
+        PopUpController.mostrarPopUp(PopUpType.ERROR, mensaje);
     }
 
     private void mostrarAdvertencia(String mensaje) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Advertencia");
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
+        PopUpController.mostrarPopUp(PopUpType.WARNING, mensaje);
     }
 
     private void mostrarExito(String mensaje) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Éxito");
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
+        PopUpController.mostrarPopUp(PopUpType.SUCCESS, mensaje);
+    }
+
+    private void mostrarInfo(String mensaje) {
+        PopUpController.mostrarPopUp(PopUpType.INFO, mensaje);
     }
 
     // Clase auxiliar para rastrear celdas seleccionadas

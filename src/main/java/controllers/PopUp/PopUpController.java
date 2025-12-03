@@ -9,9 +9,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import java.util.function.Consumer;
 
 public class PopUpController {
 
@@ -19,6 +21,11 @@ public class PopUpController {
     @FXML private Label lblIcon;
     @FXML private Label lblMensaje;
     @FXML private Button btnAceptar;
+    @FXML private Button btnCancelar;
+    @FXML private HBox hboxBotones;
+
+    private Consumer<Boolean> callback;
+    private boolean resultado = false;
 
     /**
      * Método para configurar visualmente el PopUp
@@ -31,29 +38,89 @@ public class PopUpController {
                 lblIcon.setText("✔");
                 root.setStyle("-fx-background-color: #D4EDDA;");
                 lblMensaje.setStyle("-fx-text-fill: #155724;");
+                btnAceptar.setStyle("-fx-background-color: #28a745; -fx-text-fill: white; " +
+                        "-fx-padding: 10 20; -fx-cursor: hand;");
                 break;
 
             case ERROR:
                 lblIcon.setText("✖");
                 root.setStyle("-fx-background-color: #F8D7DA;");
                 lblMensaje.setStyle("-fx-text-fill: #721C24;");
+                btnAceptar.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white; " +
+                        "-fx-padding: 10 20; -fx-cursor: hand;");
                 break;
 
             case WARNING:
                 lblIcon.setText("⚠");
                 root.setStyle("-fx-background-color: #FFF3CD;");
                 lblMensaje.setStyle("-fx-text-fill: #856404;");
+                btnAceptar.setStyle("-fx-background-color: #ffc107; -fx-text-fill: #212529; " +
+                        "-fx-padding: 10 20; -fx-cursor: hand;");
+                break;
+
+            case INFO:
+                lblIcon.setText("ℹ");
+                root.setStyle("-fx-background-color: #D1ECF1;");
+                lblMensaje.setStyle("-fx-text-fill: #0C5460;");
+                btnAceptar.setStyle("-fx-background-color: #17a2b8; -fx-text-fill: white; " +
+                        "-fx-padding: 10 20; -fx-cursor: hand;");
+                break;
+
+            case CONFIRMATION:
+                lblIcon.setText("❓");
+                root.setStyle("-fx-background-color: #E7F3FF;");
+                lblMensaje.setStyle("-fx-text-fill: #004085;");
+                btnAceptar.setText("Confirmar");
+                btnAceptar.setStyle("-fx-background-color: #007bff; -fx-text-fill: white; " +
+                        "-fx-padding: 10 20; -fx-cursor: hand;");
+
+                // Mostrar botón cancelar
+                btnCancelar.setVisible(true);
+                btnCancelar.setManaged(true);
+                btnCancelar.setStyle("-fx-background-color: #6c757d; -fx-text-fill: white; " +
+                        "-fx-padding: 10 20; -fx-cursor: hand;");
                 break;
         }
     }
 
+    public void setCallback(Consumer<Boolean> callback) {
+        this.callback = callback;
+    }
+
     @FXML
+    private void aceptar() {
+        resultado = true;
+        cerrar();
+    }
+
+    @FXML
+    private void cancelar() {
+        resultado = false;
+        cerrar();
+    }
+
     private void cerrar() {
         Stage stage = (Stage) btnAceptar.getScene().getWindow();
+
+        // Ejecutar callback si existe
+        if (callback != null) {
+            callback.accept(resultado);
+        }
+
         stage.close();
     }
 
+    // ========================================
+    // MÉTODO ESTÁTICO PARA MENSAJES SIMPLES
+    // ========================================
     public static void mostrarPopUp(PopUpType tipo, String mensaje) {
+        mostrarPopUpConCallback(tipo, mensaje, null);
+    }
+
+    // ========================================
+    // MÉTODO ESTÁTICO PARA CONFIRMACIONES
+    // ========================================
+    public static void mostrarPopUpConCallback(PopUpType tipo, String mensaje, Consumer<Boolean> callback) {
         try {
             FXMLLoader loader = new FXMLLoader(
                     PopUpController.class.getResource("/views/componentes/PopUp.fxml")
@@ -62,6 +129,7 @@ public class PopUpController {
             Parent root = loader.load();
             PopUpController controller = loader.getController();
             controller.setPopUp(tipo, mensaje);
+            controller.setCallback(callback);
 
             // ============================
             // OWNER (VENTANA PRINCIPAL)
@@ -91,7 +159,7 @@ public class PopUpController {
             // ============================
             Stage ventana = new Stage();
             ventana.initStyle(javafx.stage.StageStyle.UNDECORATED);
-            ventana.initModality(Modality.NONE);  // 🔥 permite mover/minimizar el fondo
+            ventana.initModality(Modality.NONE);
             ventana.initOwner(finalOwner);
 
             ventana.setScene(new Scene(root));
@@ -112,7 +180,7 @@ public class PopUpController {
             });
 
             // ============================
-            // BLOQUEAR CLICS AL FONDO (sin modal)
+            // BLOQUEAR CLICS AL FONDO
             // ============================
             if (finalOwner != null) {
                 finalOwner.getScene().getRoot().setMouseTransparent(true);
@@ -150,8 +218,4 @@ public class PopUpController {
             e.printStackTrace();
         }
     }
-
-
-
-
 }
