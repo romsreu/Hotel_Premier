@@ -5,6 +5,7 @@ import ar.utn.hotel.dao.EstadoHabitacionDAO;
 import ar.utn.hotel.dao.impl.EstadoHabitacionDAOImpl;
 import ar.utn.hotel.dao.impl.HabitacionDAOImpl;
 import ar.utn.hotel.model.Habitacion;
+import ar.utn.hotel.model.RegistroEstadoHabitacion;
 import enums.ContextoEstadoHabitaciones;
 import enums.EstadoHabitacion;
 import enums.TipoHabitacion;
@@ -235,9 +236,10 @@ public class EstadoHabitacionesController2 {
         cargarGrillaPorTipo(gridSuiteDoble, TipoHabitacion.SUITE_DOBLE);
     }
 
-    private void cargarGrillaPorTipo(GridPane grid, TipoHabitacion tipo) {
+    private void cargarGrillaPorTipo(GridPane grid, enums.TipoHabitacion tipo) {
         List<Habitacion> habitacionesTipo = todasLasHabitaciones.stream()
-                .filter(h -> h.getTipo() == tipo)
+                .filter(h -> h.getTipo() != null &&
+                        h.getTipo().getNombre().equals(tipo.name()))
                 .collect(Collectors.toList());
 
         cargarGrilla(grid, fechaInicio, fechaFin, habitacionesTipo);
@@ -287,7 +289,7 @@ public class EstadoHabitacionesController2 {
         // Encabezados de columnas (habitaciones)
         for (int col = 0; col < habitaciones.size(); col++) {
             Habitacion hab = habitaciones.get(col);
-            String texto = hab.getTipo().toString() + " " + hab.getNumero();
+            String texto = hab.getTipo().getNombre() + " #" + hab.getNumero();
             StackPane header = crearCeldaEncabezado(texto);
             grid.add(header, col + 1, 0);
         }
@@ -314,11 +316,15 @@ public class EstadoHabitacionesController2 {
         }
     }
 
-    private EstadoHabitacion obtenerEstadoHabitacion(Habitacion habitacion, LocalDate fecha) {
-        // TODO: Aquí deberías consultar el estado real de la habitación en esa fecha
-        // considerando reservas existentes
-        // Por ahora retorno el estado actual de la habitación
-        return habitacion.getEstado();
+    private enums.EstadoHabitacion obtenerEstadoHabitacion(Habitacion habitacion, LocalDate fecha) {
+        RegistroEstadoHabitacion registro = habitacion.getEstadoEn(fecha);
+
+        if (registro != null && registro.getEstado() != null) {
+            return registro.getEstado().getEstado();
+        }
+
+        // Por defecto, si no hay registro, asumir disponible
+        return enums.EstadoHabitacion.DISPONIBLE;
     }
 
     private StackPane crearCeldaEncabezado(String texto) {
@@ -336,7 +342,7 @@ public class EstadoHabitacionesController2 {
         return celda;
     }
 
-    private StackPane crearCeldaEstado(LocalDate fecha, Habitacion habitacion, EstadoHabitacion estado) {
+    private StackPane crearCeldaEstado(LocalDate fecha, Habitacion habitacion, enums.EstadoHabitacion estado) {
         StackPane celda = new StackPane();
         celda.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
@@ -345,7 +351,7 @@ public class EstadoHabitacionesController2 {
             case DISPONIBLE -> "#48bb78"; // Verde
             case RESERVADA -> "#f56565";  // Rojo
             case MANTENIMIENTO -> "#4299e1"; // Azul
-           // case OCUPADA -> "#ed8936"; // Naranja
+            case OCUPADA -> "#ed8936"; // Naranja
         };
 
         celda.setStyle(String.format(
@@ -353,7 +359,7 @@ public class EstadoHabitacionesController2 {
                 colorFondo
         ));
 
-        Label label = new Label(estado.toString());
+        Label label = new Label(estado.name()); // Cambiado de toString() a name()
         label.setStyle("-fx-text-fill: #1a202c; -fx-font-weight: bold; -fx-font-size: 13px;");
         label.setAlignment(Pos.CENTER);
 
@@ -362,7 +368,7 @@ public class EstadoHabitacionesController2 {
         // Configurar interactividad según contexto
         if (contexto != ContextoEstadoHabitaciones.MOSTRAR) {
             // Solo permitir selección si está disponible
-            if (estado == EstadoHabitacion.DISPONIBLE) {
+            if (estado == enums.EstadoHabitacion.DISPONIBLE) {
                 celda.setCursor(Cursor.HAND);
                 celda.setOnMouseClicked(e -> handleCeldaClickSeleccion(celda, fecha, habitacion, estado));
                 celda.setOnMouseEntered(e -> celda.setOpacity(0.8));
@@ -379,21 +385,22 @@ public class EstadoHabitacionesController2 {
         return celda;
     }
 
-    private void handleCeldaClickInfo(LocalDate fecha, Habitacion habitacion, EstadoHabitacion estado) {
+    private void handleCeldaClickInfo(LocalDate fecha, Habitacion habitacion, enums.EstadoHabitacion estado) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Información de Habitación");
-        alert.setHeaderText(habitacion.getTipo() + " " + habitacion.getNumero());
-        //alert.setContentText(String.format(
-                //"Fecha: %s\nEstado: %s\nPrecio: $%.2f",
-               // fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                //estado,
-                //habitacion.getPrecio()
-       // ));
+        alert.setHeaderText(habitacion.getTipo().getDescripcion() + " #" + habitacion.getNumero());
+        alert.setContentText(String.format(
+                "Fecha: %s\nEstado: %s\nCapacidad: %d personas\nCosto por noche: $%.2f",
+                fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                estado.name(),
+                habitacion.getTipo().getCapacidad(),
+                habitacion.getTipo().getCostoNoche()
+        ));
         alert.showAndWait();
     }
 
     private void handleCeldaClickSeleccion(StackPane celda, LocalDate fecha,
-                                           Habitacion habitacion, EstadoHabitacion estado) {
+                                           Habitacion habitacion, enums.EstadoHabitacion estado) {
         CeldaSeleccionada celdaSel = new CeldaSeleccionada(fecha, habitacion.getNumero());
 
         if (celdasSeleccionadas.contains(celdaSel)) {
