@@ -15,21 +15,23 @@ public class GestorHuesped {
     private final DireccionDAO direccionDAO;
     private final HuespedDAO huespedDAO;
 
-    // Constructor por defecto con implementaciones concretas
+    // Constructor por defecto
     public GestorHuesped() {
         this.direccionDAO = new DireccionDAOImpl();
         this.huespedDAO = new HuespedDAOImpl();
     }
 
-    // Constructor para inyección de dependencias (útil para testing)
+    // Constructor para inyección de dependencias
     public GestorHuesped(DireccionDAO direccionDAO, HuespedDAO huespedDAO) {
         this.direccionDAO = direccionDAO;
         this.huespedDAO = huespedDAO;
     }
 
+    /**
+     * Da de alta un nuevo huésped en el sistema
+     */
     public Huesped cargar(DarAltaHuespedDTO dto) {
-
-        // 1) Verificar si ya existe un huésped con ese documento
+        // Verificar si ya existe
         if (huespedDAO.existePorDocumento(dto.getNumeroDocumento(), dto.getTipoDocumento())) {
             throw new IllegalArgumentException(
                     "Ya existe un huésped registrado con el documento " +
@@ -37,7 +39,7 @@ public class GestorHuesped {
             );
         }
 
-        // 2) Buscar o crear Dirección
+        // Buscar o crear Dirección
         Direccion dir = direccionDAO.buscarPorDatos(
                 dto.getCalle(),
                 dto.getNumero(),
@@ -64,16 +66,12 @@ public class GestorHuesped {
             direccionDAO.guardar(dir);
         }
 
-        // 3) Crear Huesped directamente (hereda de Persona)
+        // Crear Huesped
         Huesped huesped = new Huesped();
-
-        // Datos de Persona (clase padre)
         huesped.setNombre(dto.getNombre());
         huesped.setApellido(dto.getApellido());
         huesped.setTelefono(dto.getTelefono());
         huesped.setDireccion(dir);
-
-        // Datos específicos de Huesped
         huesped.setNumeroDocumento(dto.getNumeroDocumento());
         huesped.setTipoDocumento(dto.getTipoDocumento());
         huesped.setPosicionIVA(dto.getPosicionIVA());
@@ -83,12 +81,13 @@ public class GestorHuesped {
         huesped.setEmail(dto.getEmail());
         huesped.setCuit(dto.getCuit());
 
-        // 4) Guardar Huesped (Hibernate maneja la herencia automáticamente)
         return huespedDAO.guardar(huesped);
     }
 
+    /**
+     * Busca huéspedes según criterios
+     */
     public List<Huesped> buscarHuesped(BuscarHuespedDTO dto) {
-        // Validar que al menos un criterio esté presente
         if ((dto.getNombre() == null || dto.getNombre().trim().isEmpty()) &&
                 (dto.getApellido() == null || dto.getApellido().trim().isEmpty()) &&
                 (dto.getTipoDocumento() == null || dto.getTipoDocumento().trim().isEmpty()) &&
@@ -98,5 +97,26 @@ public class GestorHuesped {
         }
 
         return huespedDAO.buscarHuesped(dto);
+    }
+
+    /**
+     * Busca huéspedes por nombre y apellido (para ocupar habitación)
+     */
+    public List<Huesped> buscarPorNombreApellido(String nombre, String apellido) {
+        BuscarHuespedDTO dto = new BuscarHuespedDTO();
+        dto.setNombre(nombre);
+        dto.setApellido(apellido);
+        return buscarHuesped(dto);
+    }
+
+    /**
+     * Busca huéspedes por nombre, apellido y DNI
+     */
+    public List<Huesped> buscarPorNombreApellidoDNI(String nombre, String apellido, String numeroDocumento) {
+        BuscarHuespedDTO dto = new BuscarHuespedDTO();
+        dto.setNombre(nombre);
+        dto.setApellido(apellido);
+        dto.setNumeroDocumento(numeroDocumento);
+        return buscarHuesped(dto);
     }
 }

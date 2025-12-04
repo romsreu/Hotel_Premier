@@ -1,10 +1,9 @@
 package controllers.EstadoHabitaciones;
 
 import ar.utn.hotel.HotelPremier;
-import ar.utn.hotel.dao.EstadoHabitacionDAO;
-import ar.utn.hotel.dao.impl.EstadoHabitacionDAOImpl;
-import ar.utn.hotel.dao.impl.HabitacionDAOImpl;
 import ar.utn.hotel.dto.HabitacionReservaDTO;
+import ar.utn.hotel.gestor.GestorHabitacion;
+import ar.utn.hotel.gestor.GestorReserva;
 import ar.utn.hotel.model.Habitacion;
 import ar.utn.hotel.model.RegistroEstadoHabitacion;
 import ar.utn.hotel.model.Reserva;
@@ -24,9 +23,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-import ar.utn.hotel.dao.impl.PersonaDAOImpl;
-import ar.utn.hotel.dao.impl.ReservaDAOImpl;
-import ar.utn.hotel.dto.ReservaDTO;
 
 public class EstadoHabitacionesController2 {
 
@@ -36,7 +32,7 @@ public class EstadoHabitacionesController2 {
     @FXML private TabPane tabPane;
     @FXML private Label lbFechaDesde;
     @FXML private Label lbFechaHasta;
-    @FXML private Label lblTitulo; // Opcional
+    @FXML private Label lblTitulo;
 
     // Referencias a los GridPanes de cada tab
     private GridPane gridTodasHabitaciones;
@@ -60,13 +56,13 @@ public class EstadoHabitacionesController2 {
     private static final int COLUMNAS_VISIBLES = 6;
     private static final int FILAS_VISIBLES = 6;
 
-    // DAO y datos
-    private HabitacionDAOImpl habitacionDAO;
+    // Gestores y datos
+    private GestorHabitacion gestorHabitacion;
+    private GestorReserva gestorReserva;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     private ContextoEstadoHabitaciones contexto;
     private List<Habitacion> todasLasHabitaciones;
-    private ReservaDAOImpl reservaDAO;
 
     // Para selección múltiple (solo en contextos RESERVAR y OCUPAR)
     private Set<CeldaSeleccionada> celdasSeleccionadas;
@@ -76,11 +72,9 @@ public class EstadoHabitacionesController2 {
     @FXML
     public void initialize() {
         mapaCeldas = new HashMap<>();
-        EstadoHabitacionDAO estadoHabitacionDAO = new EstadoHabitacionDAOImpl();
-        habitacionDAO = new HabitacionDAOImpl(estadoHabitacionDAO);
-        PersonaDAOImpl personaDAO = new PersonaDAOImpl();
-        reservaDAO = new ReservaDAOImpl(personaDAO, estadoHabitacionDAO);
         celdasSeleccionadas = new HashSet<>();
+        gestorHabitacion = new GestorHabitacion();
+        gestorReserva = new GestorReserva();
 
         // Obtener datos del DataTransfer
         fechaInicio = DataTransfer.getFechaDesdeEstadoHabitaciones();
@@ -234,7 +228,9 @@ public class EstadoHabitacionesController2 {
 
     private void cargarDatosReales() {
         // Cargar todas las habitaciones desde la BD
-        todasLasHabitaciones = habitacionDAO.listarTodas();
+        todasLasHabitaciones = gestorHabitacion.listarTodasHabitaciones();
+
+
 
         if (todasLasHabitaciones.isEmpty()) {
             mostrarError("No hay habitaciones registradas en el sistema");
@@ -544,9 +540,10 @@ public class EstadoHabitacionesController2 {
         if (!celdasReservadas.isEmpty()) {
             mostrarAdvertenciaReservasExistentes(celdasReservadas);
         } else {
-            procesarOcupacion();
+            prepararYProcesarOcupacion();
         }
     }
+
 
     private void mostrarError(String mensaje) {
         PopUpController.mostrarPopUp(PopUpType.ERROR, mensaje);
@@ -775,63 +772,75 @@ public class EstadoHabitacionesController2 {
                 mensaje.toString(),
                 confirmado -> {
                     if (confirmado) {
-                        procesarOcupacion();
+                        prepararYProcesarOcupacion();
                     }
                 }
         );
     }
 
     private Reserva buscarReservaPorHabitacionYFecha(Integer numeroHabitacion, LocalDate fecha) {
-        try {
-            List<Reserva> todasReservas = reservaDAO.obtenerTodas();
-
-            return todasReservas.stream()
-                    .filter(r -> r.getHabitacion() != null &&
-                            r.getHabitacion().getNumero().equals(numeroHabitacion))
-                    .filter(r -> !fecha.isBefore(r.getFechaInicio()) &&
-                            !fecha.isAfter(r.getFechaFin()))
-                    .findFirst()
-                    .orElse(null);
-        } catch (Exception e) {
-            System.err.println("Error al buscar reserva: " + e.getMessage());
-            return null;
-        }
+        return gestorReserva.buscarReservaPorHabitacionYFecha(numeroHabitacion, fecha);
     }
 
-    private void procesarOcupacion() {
-        // TODO: Aquí va la lógica real de ocupar habitaciones
+    private void prepararYProcesarOcupacion() {
+        // Agrupar celdas seleccionadas por habitación
+        Map<Integer, List<LocalDate>> habitacionPorFechas = new HashMap<>();
 
-        StringBuilder mensaje = new StringBuilder();
-        mensaje.append("✓ OCUPACIÓN CONFIRMADA EXITOSAMENTE\n\n");
-        mensaje.append(String.format("Total de habitaciones ocupadas: %d\n\n", celdasSeleccionadas.size()));
-
-        // Agrupar por habitación
-        Map<Integer, List<LocalDate>> porHabitacion = new HashMap<>();
         for (CeldaSeleccionada celda : celdasSeleccionadas) {
-            porHabitacion.computeIfAbsent(celda.numeroHabitacion, k -> new ArrayList<>())
+            habitacionPorFechas.computeIfAbsent(celda.numeroHabitacion, k -> new ArrayList<>())
                     .add(celda.fecha);
         }
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        mensaje.append("DETALLE:\n");
-        for (Map.Entry<Integer, List<LocalDate>> entry : porHabitacion.entrySet()) {
+        // Crear lista de DTOs (igual que en RESERVAR)
+        List<HabitacionReservaDTO> habitacionesDTO = new ArrayList<>();
+
+        for (Map.Entry<Integer, List<LocalDate>> entry : habitacionPorFechas.entrySet()) {
+            Integer numeroHab = entry.getKey();
             List<LocalDate> fechas = entry.getValue();
+
             fechas.sort(LocalDate::compareTo);
-            mensaje.append(String.format("• Habitación %d: %s - %s\n",
-                    entry.getKey(),
-                    fechas.get(0).format(formatter),
-                    fechas.get(fechas.size() - 1).format(formatter)));
+            LocalDate fechaIngreso = fechas.get(0);
+            LocalDate fechaEgreso = fechas.get(fechas.size() - 1);
+
+            Habitacion habitacion = buscarHabitacionPorNumero(numeroHab);
+
+            if (habitacion != null) {
+                long cantidadNoches = ChronoUnit.DAYS.between(fechaIngreso, fechaEgreso) + 1;
+                double costoNoche = habitacion.getTipo().getCostoNoche();
+                double costoTotal = cantidadNoches * costoNoche;
+
+                HabitacionReservaDTO dto = HabitacionReservaDTO.builder()
+                        .numeroHabitacion(numeroHab)
+                        .tipoHabitacion(habitacion.getTipo().getDescripcion())
+                        .costoNoche(costoNoche)
+                        .piso(habitacion.getPiso())
+                        .capacidad(habitacion.getTipo().getCapacidad())
+                        .fechaIngreso(fechaIngreso)
+                        .fechaEgreso(fechaEgreso)
+                        .cantidadNoches((int) cantidadNoches)
+                        .costoTotal(costoTotal)
+                        .build();
+
+                habitacionesDTO.add(dto);
+            }
         }
 
-        PopUpController.mostrarPopUpConCallback(
-                PopUpType.SUCCESS,
-                mensaje.toString(),
-                confirmado -> {
-                    DataTransfer.limpiar();
-                    HotelPremier.cambiarA("menu");
-                }
-        );
+        habitacionesDTO.sort(Comparator.comparing(HabitacionReservaDTO::getNumeroHabitacion));
+
+        // Guardar en DataTransfer
+        DataTransfer.setHabitacionesSeleccionadas(habitacionesDTO);
+
+        // Ir a la pantalla de ocupar habitación
+        HotelPremier.cambiarA("ocupar_hab1");
     }
+
+    private Habitacion buscarHabitacionPorNumero(Integer numero) {
+        return todasLasHabitaciones.stream()
+                .filter(h -> h.getNumero().equals(numero))
+                .findFirst()
+                .orElse(null);
+    }
+
     /**
      * Refresca los estilos visuales de todas las celdas seleccionadas
      * en todas las grillas actualmente cargadas

@@ -1,14 +1,20 @@
 package ar.utn.hotel.gestor;
 
 import ar.utn.hotel.dao.HabitacionDAO;
+import ar.utn.hotel.dao.ReservaDAO;
 import ar.utn.hotel.dao.TipoHabitacionDAO;
+import ar.utn.hotel.dao.impl.EstadoHabitacionDAOImpl;
+import ar.utn.hotel.dao.impl.HabitacionDAOImpl;
+import ar.utn.hotel.dao.impl.TipoHabitacionDAOImpl;
 import ar.utn.hotel.dto.HabitacionDTO;
 import ar.utn.hotel.model.Habitacion;
 import ar.utn.hotel.model.TipoHabitacion;
 import ar.utn.hotel.model.EstadoHabitacion;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -20,6 +26,11 @@ public class GestorHabitacion {
     public GestorHabitacion(HabitacionDAO habitacionDAO, TipoHabitacionDAO tipoHabitacionDAO) {
         this.habitacionDAO = habitacionDAO;
         this.tipoHabitacionDAO = tipoHabitacionDAO;
+    }
+
+    public GestorHabitacion() {
+        this.habitacionDAO = new HabitacionDAOImpl(new EstadoHabitacionDAOImpl());
+        this.tipoHabitacionDAO = new TipoHabitacionDAOImpl();
     }
 
     public void crearHabitacion(HabitacionDTO dto) {
@@ -194,5 +205,23 @@ public class GestorHabitacion {
         if (dto.getTipo() == null || dto.getTipo().trim().isEmpty()) {
             throw new IllegalArgumentException("El tipo de habitación es obligatorio");
         }
+    }
+
+    public void ocuparHabitacionesConFechasEspecificas(Map<Integer, ReservaDAO.RangoFechas> habitacionesConFechas) {
+        if (habitacionesConFechas == null || habitacionesConFechas.isEmpty()) {
+            throw new IllegalArgumentException("Debe proporcionar al menos una habitación para ocupar");
+        }
+
+        // Por cada habitación, ocuparla con sus fechas específicas
+        for (Map.Entry<Integer, ReservaDAO.RangoFechas> entry : habitacionesConFechas.entrySet()) {
+            Integer numeroHab = entry.getKey();
+            ReservaDAO.RangoFechas rango = entry.getValue();
+
+            Set<Integer> habitacion = Collections.singleton(numeroHab);
+            ocuparHabitaciones(habitacion, rango.getFechaInicio(), rango.getFechaFin());
+        }
+    }
+    public List<Habitacion> listarTodasHabitaciones() {
+        return habitacionDAO.listarTodas();
     }
 }

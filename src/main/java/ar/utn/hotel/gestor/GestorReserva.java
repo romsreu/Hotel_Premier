@@ -2,6 +2,9 @@ package ar.utn.hotel.gestor;
 
 import ar.utn.hotel.dao.PersonaDAO;
 import ar.utn.hotel.dao.ReservaDAO;
+import ar.utn.hotel.dao.impl.EstadoHabitacionDAOImpl;
+import ar.utn.hotel.dao.impl.PersonaDAOImpl;
+import ar.utn.hotel.dao.impl.ReservaDAOImpl;
 import ar.utn.hotel.dto.ReservaDTO;
 import ar.utn.hotel.model.Persona;
 import ar.utn.hotel.model.Reserva;
@@ -17,6 +20,13 @@ public class GestorReserva {
 
     public GestorReserva(ReservaDAO reservaDAO, PersonaDAO personaDAO) {
         this.reservaDAO = reservaDAO;
+        this.personaDAO = personaDAO;
+    }
+
+    public GestorReserva() {
+        PersonaDAOImpl personaDAO = new PersonaDAOImpl();
+        EstadoHabitacionDAOImpl estadoDAO = new EstadoHabitacionDAOImpl();
+        this.reservaDAO = new ReservaDAOImpl(personaDAO, estadoDAO);
         this.personaDAO = personaDAO;
     }
 
@@ -191,6 +201,23 @@ public class GestorReserva {
             throw new IllegalArgumentException(
                     "Debe seleccionar al menos una habitación"
             );
+        }
+    }
+
+    public Reserva buscarReservaPorHabitacionYFecha(Integer numeroHabitacion, LocalDate fecha) {
+        try {
+            List<Reserva> reservas = reservaDAO.obtenerTodas();
+
+            return reservas.stream()
+                    .filter(r -> r.getHabitacion() != null &&
+                            r.getHabitacion().getNumero().equals(numeroHabitacion))
+                    .filter(r -> !fecha.isBefore(r.getFechaInicio()) &&
+                            !fecha.isAfter(r.getFechaFin()))
+                    .findFirst()
+                    .orElse(null);
+        } catch (Exception e) {
+            System.err.println("Error al buscar reserva: " + e.getMessage());
+            return null;
         }
     }
 }
