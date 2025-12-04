@@ -3,26 +3,33 @@ package ar.utn.hotel.dao;
 import ar.utn.hotel.model.Reserva;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 public interface ReservaDAO {
-    Reserva crearReserva(Long idPersona, LocalDate fechaInicio, LocalDate fechaFin, Set<Integer> numerosHabitaciones);
 
-    Reserva crearReservaPorNombreApellido(String nombre, String apellido, LocalDate fechaInicio, LocalDate fechaFin, Set<Integer> numerosHabitaciones);
+    // Crear múltiples reservas (una por cada habitación con sus fechas)
+    List<Reserva> crearReservas(Long idPersona, Map<Integer, RangoFechas> habitacionesConFechas);
 
-    Reserva crearReservaPorTelefono(String telefono, LocalDate fechaInicio, LocalDate fechaFin, Set<Integer> numerosHabitaciones);
+    List<Reserva> crearReservasPorNombreApellido(String nombre, String apellido,
+                                                 Map<Integer, RangoFechas> habitacionesConFechas);
 
+    List<Reserva> crearReservasPorTelefono(String telefono,
+                                           Map<Integer, RangoFechas> habitacionesConFechas);
+
+    // CRUD básico
     Reserva obtenerPorId(Long id);
-
     List<Reserva> obtenerTodas();
-
     List<Reserva> obtenerPorPersona(Long idPersona);
-
     List<Reserva> obtenerPorFechas(LocalDate fechaInicio, LocalDate fechaFin);
-
     List<Reserva> obtenerPorHabitacion(Integer numeroHabitacion);
-
     void actualizar(Reserva reserva);
-
     void eliminar(Long id);
+
+    // Clase auxiliar para transportar rangos de fechas
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    class RangoFechas {
+        LocalDate fechaInicio;
+        LocalDate fechaFin;
+    }
 }

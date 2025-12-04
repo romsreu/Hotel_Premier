@@ -4,6 +4,7 @@ import ar.utn.hotel.dao.EstadoHabitacionDAO;
 import ar.utn.hotel.dao.HabitacionDAO;
 import ar.utn.hotel.dao.PersonaDAO;
 import ar.utn.hotel.dao.ReservaDAO;
+import ar.utn.hotel.dao.ReservaDAO.RangoFechas;
 import ar.utn.hotel.dao.TipoHabitacionDAO;
 import ar.utn.hotel.dao.impl.EstadoHabitacionDAOImpl;
 import ar.utn.hotel.dao.impl.HabitacionDAOImpl;
@@ -130,7 +131,6 @@ public class InicializadorHabitaciones {
             throw new IllegalStateException("No se encontró el estado DISPONIBLE en el catálogo");
         }
 
-        int contador = 1;
         int pisoActual = 1;
         int habitacionesPorPiso = 24;
         int habitacionesEnPisoActual = 0;
@@ -181,7 +181,6 @@ public class InicializadorHabitaciones {
                     System.out.println("○ Habitación " + numeroHabitacion + " ya existe - omitida");
                 }
 
-                contador++;
                 habitacionesEnPisoActual++;
 
                 // Cambiar de piso cada 24 habitaciones
@@ -245,13 +244,19 @@ public class InicializadorHabitaciones {
         }
     }
 
-    // Método para probar creando una reserva a nombre de JOSE RODRIGUEZ
+    // Método para probar creando reservas a nombre de JOSE RODRIGUEZ
     public void probarReserva() {
         System.out.println("\n=== PROBANDO SISTEMA DE RESERVAS ===");
 
         try {
-            // 1. Crear o buscar persona JOSE RODRIGUEZ
+            // 1. Buscar persona JOSE RODRIGUEZ
             Persona jose = personaDAO.buscarPorNombreApellido("JOSE", "RODRIGUEZ");
+
+            if (jose == null) {
+                System.out.println("✗ No se encontró la persona JOSE RODRIGUEZ");
+                System.out.println("  Asegúrate de tener datos de prueba en la tabla 'persona'");
+                return;
+            }
 
             // 2. Buscar habitaciones disponibles
             System.out.println("\n--- Buscando habitaciones disponibles ---");
@@ -264,59 +269,94 @@ public class InicializadorHabitaciones {
 
             System.out.println("✓ Encontradas " + disponibles.size() + " habitaciones disponibles");
 
-            // Seleccionar las primeras 2 habitaciones disponibles
-            Set<Integer> numerosHabitaciones = new HashSet<>();
-            int count = 0;
-            for (Habitacion hab : disponibles) {
-                if (count >= 2) break;
-                numerosHabitaciones.add(hab.getNumero());
-                System.out.println("  • Habitación " + hab.getNumero() + " - " +
-                        hab.getTipo().getDescripcion() + " ($" + hab.getCostoNoche() + "/noche)");
-                count++;
+            // 3. Preparar datos para reservar 2 habitaciones con fechas diferentes
+            Map<Integer, RangoFechas> habitacionesConFechas = new HashMap<>();
+
+            if (disponibles.size() >= 2) {
+                Habitacion hab1 = disponibles.get(0);
+                Habitacion hab2 = disponibles.get(1);
+
+                // Habitación 1: mañana por 5 noches
+                LocalDate fecha1Inicio = LocalDate.now().plusDays(1);
+                LocalDate fecha1Fin = LocalDate.now().plusDays(5);
+                habitacionesConFechas.put(hab1.getNumero(),
+                        new RangoFechas(fecha1Inicio, fecha1Fin));
+
+                System.out.println("\n--- Preparando reservas ---");
+                System.out.println("Habitación " + hab1.getNumero() +
+                        " (" + hab1.getTipo().getDescripcion() + "):");
+                System.out.println("  Desde: " + fecha1Inicio);
+                System.out.println("  Hasta: " + fecha1Fin);
+                System.out.println("  Costo: $" + hab1.getCostoNoche() + "/noche");
+
+                // Habitación 2: dentro de una semana por 6 noches (fechas diferentes!)
+                LocalDate fecha2Inicio = LocalDate.now().plusDays(7);
+                LocalDate fecha2Fin = LocalDate.now().plusDays(12);
+                habitacionesConFechas.put(hab2.getNumero(),
+                        new RangoFechas(fecha2Inicio, fecha2Fin));
+
+                System.out.println("\nHabitación " + hab2.getNumero() +
+                        " (" + hab2.getTipo().getDescripcion() + "):");
+                System.out.println("  Desde: " + fecha2Inicio);
+                System.out.println("  Hasta: " + fecha2Fin);
+                System.out.println("  Costo: $" + hab2.getCostoNoche() + "/noche");
+            } else {
+                System.out.println("✗ No hay suficientes habitaciones disponibles para la prueba");
+                return;
             }
 
-            // 3. Crear fechas de reserva (hoy + 7 días de estadía)
-            LocalDate fechaInicio = LocalDate.now().plusDays(1);
-            LocalDate fechaFin = LocalDate.now().plusDays(8);
-
-            System.out.println("\n--- Creando reserva ---");
-            System.out.println("Fechas: " + fechaInicio + " al " + fechaFin);
-            System.out.println("Habitaciones: " + numerosHabitaciones);
-
-            // 4. Crear la reserva
-            Reserva reserva = reservaDAO.crearReservaPorNombreApellido(
+            // 4. Crear las reservas
+            System.out.println("\n--- Creando reservas en la base de datos ---");
+            List<Reserva> reservas = reservaDAO.crearReservasPorNombreApellido(
                     "JOSE",
                     "RODRIGUEZ",
-                    fechaInicio,
-                    fechaFin,
-                    numerosHabitaciones
+                    habitacionesConFechas
             );
 
-            System.out.println("\n✓✓✓ RESERVA CREADA EXITOSAMENTE ✓✓✓");
-            System.out.println("ID Reserva: " + reserva.getId());
-            System.out.println("Cliente: " + reserva.getPersona().getNombre() + " " +
-                    reserva.getPersona().getApellido());
-            System.out.println("Check-in: " + reserva.getFechaInicio());
-            System.out.println("Check-out: " + reserva.getFechaFin());
-            System.out.println("Habitaciones reservadas:");
-            for (Habitacion hab : reserva.getHabitaciones()) {
-                System.out.println("  • Habitación " + hab.getNumero() + " - " +
-                        hab.getTipo().getDescripcion());
+            System.out.println("\n✓✓✓ RESERVAS CREADAS EXITOSAMENTE ✓✓✓");
+            System.out.println("Total de reservas creadas: " + reservas.size());
+            System.out.println("Cliente: " + jose.getNombre() + " " + jose.getApellido());
+
+            System.out.println("\n--- Detalle de reservas creadas ---");
+            for (Reserva reserva : reservas) {
+                System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+                System.out.println("Reserva ID: " + reserva.getId());
+                System.out.println("Habitación: " + reserva.getHabitacion().getNumero() +
+                        " - " + reserva.getHabitacion().getTipo().getDescripcion());
+                System.out.println("Check-in: " + reserva.getFechaInicio());
+                System.out.println("Check-out: " + reserva.getFechaFin());
+
+                long noches = java.time.temporal.ChronoUnit.DAYS.between(
+                        reserva.getFechaInicio(),
+                        reserva.getFechaFin()
+                ) + 1;
+                double costoTotal = noches * reserva.getHabitacion().getCostoNoche();
+
+                System.out.println("Noches: " + noches);
+                System.out.println("Costo total: $" + costoTotal);
 
                 // Verificar estado actual
-                RegistroEstadoHabitacion estadoActual = hab.getEstadoActual();
+                RegistroEstadoHabitacion estadoActual = reserva.getHabitacion().getEstadoActual();
                 if (estadoActual != null) {
-                    System.out.println("    Estado: " + estadoActual.getEstado().getEstado().name());
+                    System.out.println("Estado actual: " + estadoActual.getEstado().getEstado().name());
                 }
             }
+            System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
             // 5. Mostrar estadísticas actualizadas
             System.out.println("\n--- Estadísticas actualizadas ---");
             System.out.println("Habitaciones disponibles: " + habitacionDAO.buscarDisponibles().size());
-            System.out.println("Total de reservas: " + reservaDAO.obtenerTodas().size());
+            System.out.println("Total de reservas en el sistema: " + reservaDAO.obtenerTodas().size());
+
+            System.out.println("\n--- Verificación en BD ---");
+            System.out.println("Puedes verificar en la base de datos:");
+            System.out.println("  SELECT * FROM reserva;");
+            System.out.println("  SELECT * FROM registro_estado_habitacion WHERE numero_habitacion IN (" +
+                    reservas.get(0).getHabitacion().getNumero() + ", " +
+                    reservas.get(1).getHabitacion().getNumero() + ");");
 
         } catch (Exception e) {
-            System.err.println("\n✗✗✗ ERROR AL CREAR RESERVA ✗✗✗");
+            System.err.println("\n✗✗✗ ERROR AL CREAR RESERVAS ✗✗✗");
             System.err.println("Error: " + e.getMessage());
             e.printStackTrace();
         }

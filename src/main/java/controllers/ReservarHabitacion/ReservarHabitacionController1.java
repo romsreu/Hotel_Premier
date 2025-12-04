@@ -1,9 +1,7 @@
 package controllers.ReservarHabitacion;
 
 import ar.utn.hotel.HotelPremier;
-import ar.utn.hotel.dao.impl.HabitacionDAOImpl;
-import ar.utn.hotel.dao.impl.EstadoHabitacionDAOImpl;
-import ar.utn.hotel.model.Habitacion;
+import ar.utn.hotel.dto.HabitacionReservaDTO;
 import controllers.PopUp.PopUpController;
 import enums.PopUpType;
 import javafx.fxml.FXML;
@@ -15,9 +13,8 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.text.Font;
 import utils.DataTransfer;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
+import java.util.List;
 
 public class ReservarHabitacionController1 {
 
@@ -26,19 +23,12 @@ public class ReservarHabitacionController1 {
     @FXML private Button btnVolver;
     @FXML private Button btnAceptar;
 
-    private HabitacionDAOImpl habitacionDAO;
-    private Map<Integer, LocalDate> habitacionesSeleccionadas;
-    private LocalDate fechaInicio;
-    private LocalDate fechaFin;
+    private List<HabitacionReservaDTO> habitacionesSeleccionadas;
 
     @FXML
     public void initialize() {
-        habitacionDAO = new HabitacionDAOImpl(new EstadoHabitacionDAOImpl());
-
         // Obtener datos del DataTransfer
-        //habitacionesSeleccionadas = DataTransfer.getHabitacionesSeleccionadas();
-        fechaInicio = DataTransfer.getFechaDesdeEstadoHabitaciones();
-        fechaFin = DataTransfer.getFechaHastaEstadoHabitaciones();
+        habitacionesSeleccionadas = DataTransfer.getHabitacionesSeleccionadas();
 
         if (habitacionesSeleccionadas == null || habitacionesSeleccionadas.isEmpty()) {
             PopUpController.mostrarPopUp(PopUpType.ERROR,
@@ -64,17 +54,7 @@ public class ReservarHabitacionController1 {
 
         int fila = 1; // Empezamos desde 1 porque 0 son los encabezados
 
-        for (Map.Entry<Integer, LocalDate> entry : habitacionesSeleccionadas.entrySet()) {
-            Integer numeroHabitacion = entry.getKey();
-            LocalDate fechaSeleccionada = entry.getValue();
-
-            // Buscar la habitación en la BD
-            Habitacion habitacion = habitacionDAO.buscarPorNumero(numeroHabitacion);
-
-            if (habitacion == null) {
-                continue;
-            }
-
+        for (HabitacionReservaDTO habitacion : habitacionesSeleccionadas) {
             // Agregar constraint para esta fila
             RowConstraints row = new RowConstraints();
             row.setMinHeight(40.0);
@@ -82,19 +62,19 @@ public class ReservarHabitacionController1 {
             gridPane.getRowConstraints().add(row);
 
             // Columna 0: Número de habitación
-            Label lblNumero = crearLabel(numeroHabitacion.toString());
+            Label lblNumero = crearLabel(habitacion.getNumeroHabitacion().toString());
             gridPane.add(lblNumero, 0, fila);
 
             // Columna 1: Tipo de habitación
-            Label lblTipo = crearLabel(habitacion.getTipo().getDescripcion());
+            Label lblTipo = crearLabel(habitacion.getTipoHabitacion());
             gridPane.add(lblTipo, 1, fila);
 
             // Columna 2: Fecha de ingreso
-            Label lblIngreso = crearLabel(fechaInicio.format(formato));
+            Label lblIngreso = crearLabel(habitacion.getFechaIngreso().format(formato));
             gridPane.add(lblIngreso, 2, fila);
 
             // Columna 3: Fecha de egreso
-            Label lblEgreso = crearLabel(fechaFin.format(formato));
+            Label lblEgreso = crearLabel(habitacion.getFechaEgreso().format(formato));
             gridPane.add(lblEgreso, 3, fila);
 
             fila++;
@@ -132,8 +112,7 @@ public class ReservarHabitacionController1 {
 
     @FXML
     private void onAceptarClicked() {
-        // Ir a la siguiente pantalla (reservar_hab2)
+        // Ir a la siguiente pantalla (reservar_hab2) donde se selecciona la persona
         HotelPremier.cambiarA("reservar_hab2");
     }
 }
-

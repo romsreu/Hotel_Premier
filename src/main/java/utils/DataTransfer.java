@@ -1,13 +1,12 @@
 package utils;
 
-import ar.utn.hotel.model.Habitacion;
+import ar.utn.hotel.dto.HabitacionReservaDTO;
 import ar.utn.hotel.model.Huesped;
 import enums.ContextoEstadoHabitaciones;
 import lombok.Getter;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 public class DataTransfer {
     private static List<Huesped> huespedesEnBusqueda;
@@ -22,7 +21,7 @@ public class DataTransfer {
     private static ContextoEstadoHabitaciones contextoEstadoHabitaciones;
 
     @Getter
-    private static Set<Habitacion> habitacionesSeleccionadas;
+    private static List<HabitacionReservaDTO> habitacionesSeleccionadas;
 
     public static void setHuespedesEnBusqueda(List<Huesped> huespedes) {
         DataTransfer.huespedesEnBusqueda = huespedes;
@@ -41,7 +40,7 @@ public class DataTransfer {
         DataTransfer.contextoEstadoHabitaciones = contexto;
     }
 
-    public static void setHabitacionesSeleccionadas(Set<Habitacion> habitaciones) {
+    public static void setHabitacionesSeleccionadas(List<HabitacionReservaDTO> habitaciones) {
         DataTransfer.habitacionesSeleccionadas = habitaciones;
     }
 

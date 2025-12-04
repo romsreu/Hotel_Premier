@@ -9,8 +9,9 @@ import org.hibernate.Transaction;
 import ar.utn.hotel.utils.HibernateUtil;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 public class ReservaDAOImpl implements ReservaDAO {
 
@@ -23,10 +24,9 @@ public class ReservaDAOImpl implements ReservaDAO {
     }
 
     @Override
-    public Reserva crearReserva(Long idPersona, LocalDate fechaInicio, LocalDate fechaFin,
-                                Set<Integer> numerosHabitaciones) {
+    public List<Reserva> crearReservas(Long idPersona, Map<Integer, RangoFechas> habitacionesConFechas) {
         Transaction transaction = null;
-        Reserva reserva = null;
+        List<Reserva> reservasCreadas = new ArrayList<>();
 
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
@@ -46,42 +46,37 @@ public class ReservaDAOImpl implements ReservaDAO {
                 throw new IllegalStateException("No existe el estado RESERVADA en el catálogo");
             }
 
-            // Crear la reserva
-            reserva = Reserva.builder()
-                    .persona(persona)
-                    .fechaInicio(fechaInicio)
-                    .fechaFin(fechaFin)
-                    .build();
+            // Crear UNA reserva por CADA habitación con sus fechas específicas
+            for (Map.Entry<Integer, RangoFechas> entry : habitacionesConFechas.entrySet()) {
+                Integer numeroHab = entry.getKey();
+                RangoFechas rango = entry.getValue();
 
-            // Obtener y agregar las habitaciones, cambiando su estado
-            for (Integer numero : numerosHabitaciones) {
+                // Obtener la habitación
                 Habitacion habitacion = session.createQuery(
                                 "SELECT DISTINCT h FROM Habitacion h " +
                                         "LEFT JOIN FETCH h.historialEstados " +
                                         "WHERE h.numero = :numero",
                                 Habitacion.class)
-                        .setParameter("numero", numero)
+                        .setParameter("numero", numeroHab)
                         .uniqueResult();
 
                 if (habitacion == null) {
-                    throw new IllegalArgumentException(
-                            "La habitación número " + numero + " no existe"
-                    );
+                    throw new IllegalArgumentException("La habitación número " + numeroHab + " no existe");
                 }
 
-                // Verificar que la habitación esté disponible
+                // Verificar disponibilidad
                 RegistroEstadoHabitacion registroActual = habitacion.getEstadoActual();
                 if (registroActual != null &&
                         registroActual.getEstado().getEstado() != enums.EstadoHabitacion.DISPONIBLE) {
                     throw new IllegalStateException(
-                            "La habitación número " + numero + " no está disponible. " +
+                            "La habitación número " + numeroHab + " no está disponible. " +
                                     "Estado actual: " + registroActual.getEstado().getEstado()
                     );
                 }
 
                 // Cerrar el registro actual
                 if (registroActual != null) {
-                    registroActual.setFechaHasta(fechaInicio.minusDays(1));
+                    registroActual.setFechaHasta(rango.getFechaInicio().minusDays(1));
                     session.merge(registroActual);
                 }
 
@@ -89,19 +84,25 @@ public class ReservaDAOImpl implements ReservaDAO {
                 RegistroEstadoHabitacion nuevoRegistro = RegistroEstadoHabitacion.builder()
                         .habitacion(habitacion)
                         .estado(estadoReservada)
-                        .fechaDesde(fechaInicio)
-                        .fechaHasta(fechaFin)
+                        .fechaDesde(rango.getFechaInicio())
+                        .fechaHasta(rango.getFechaFin())
                         .build();
 
                 habitacion.getHistorialEstados().add(nuevoRegistro);
                 session.persist(nuevoRegistro);
 
-                // Agregar habitación a la reserva
-                reserva.agregarHabitacion(habitacion);
-            }
+                // Crear UNA reserva para ESTA habitación con SUS fechas específicas
+                Reserva reserva = Reserva.builder()
+                        .persona(persona)
+                        .habitacion(habitacion)
+                        .fechaInicio(rango.getFechaInicio())
+                        .fechaFin(rango.getFechaFin())
+                        .build();
 
-            // Persistir la reserva
-            session.persist(reserva);
+                // Persistir la reserva
+                session.persist(reserva);
+                reservasCreadas.add(reserva);
+            }
 
             transaction.commit();
 
@@ -109,35 +110,34 @@ public class ReservaDAOImpl implements ReservaDAO {
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw new RuntimeException("Error al crear reserva: " + e.getMessage(), e);
+            throw new RuntimeException("Error al crear reservas: " + e.getMessage(), e);
         }
 
-        return reserva;
+        return reservasCreadas;
     }
 
     @Override
-    public Reserva crearReservaPorNombreApellido(String nombre, String apellido,
-                                                 LocalDate fechaInicio, LocalDate fechaFin,
-                                                 Set<Integer> numerosHabitaciones) {
+    public List<Reserva> crearReservasPorNombreApellido(String nombre, String apellido,
+                                                        Map<Integer, RangoFechas> habitacionesConFechas) {
         Persona persona = personaDAO.buscarPorNombreApellido(nombre, apellido);
 
         if (persona == null) {
             throw new RuntimeException("Error: La persona no se encuentra cargada en el sistema.");
         }
 
-        return crearReserva(persona.getId(), fechaInicio, fechaFin, numerosHabitaciones);
+        return crearReservas(persona.getId(), habitacionesConFechas);
     }
 
     @Override
-    public Reserva crearReservaPorTelefono(String telefono, LocalDate fechaInicio,
-                                           LocalDate fechaFin, Set<Integer> numerosHabitaciones) {
+    public List<Reserva> crearReservasPorTelefono(String telefono,
+                                                  Map<Integer, RangoFechas> habitacionesConFechas) {
         Persona persona = personaDAO.buscarPorTelefono(telefono);
 
         if (persona == null) {
             throw new RuntimeException("Error: La persona no se encuentra cargada en el sistema.");
         }
 
-        return crearReserva(persona.getId(), fechaInicio, fechaFin, numerosHabitaciones);
+        return crearReservas(persona.getId(), habitacionesConFechas);
     }
 
     @Override
@@ -145,7 +145,7 @@ public class ReservaDAOImpl implements ReservaDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
                             "SELECT DISTINCT r FROM Reserva r " +
-                                    "LEFT JOIN FETCH r.habitaciones h " +
+                                    "LEFT JOIN FETCH r.habitacion h " +
                                     "LEFT JOIN FETCH h.historialEstados " +
                                     "LEFT JOIN FETCH r.persona " +
                                     "WHERE r.id = :id",
@@ -160,7 +160,7 @@ public class ReservaDAOImpl implements ReservaDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
                             "SELECT DISTINCT r FROM Reserva r " +
-                                    "LEFT JOIN FETCH r.habitaciones " +
+                                    "LEFT JOIN FETCH r.habitacion " +
                                     "LEFT JOIN FETCH r.persona " +
                                     "ORDER BY r.fechaInicio DESC",
                             Reserva.class)
@@ -173,7 +173,7 @@ public class ReservaDAOImpl implements ReservaDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
                             "SELECT DISTINCT r FROM Reserva r " +
-                                    "LEFT JOIN FETCH r.habitaciones " +
+                                    "LEFT JOIN FETCH r.habitacion " +
                                     "WHERE r.persona.id = :idPersona " +
                                     "ORDER BY r.fechaInicio DESC",
                             Reserva.class)
@@ -187,7 +187,7 @@ public class ReservaDAOImpl implements ReservaDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
                             "SELECT DISTINCT r FROM Reserva r " +
-                                    "LEFT JOIN FETCH r.habitaciones " +
+                                    "LEFT JOIN FETCH r.habitacion " +
                                     "LEFT JOIN FETCH r.persona " +
                                     "WHERE r.fechaInicio <= :fechaFin " +
                                     "AND r.fechaFin >= :fechaInicio " +
@@ -204,9 +204,8 @@ public class ReservaDAOImpl implements ReservaDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
                             "SELECT DISTINCT r FROM Reserva r " +
-                                    "JOIN r.habitaciones h " +
                                     "LEFT JOIN FETCH r.persona " +
-                                    "WHERE h.numero = :numeroHabitacion " +
+                                    "WHERE r.habitacion.numero = :numeroHabitacion " +
                                     "ORDER BY r.fechaInicio DESC",
                             Reserva.class)
                     .setParameter("numeroHabitacion", numeroHabitacion)
@@ -237,28 +236,28 @@ public class ReservaDAOImpl implements ReservaDAO {
 
             Reserva reserva = session.get(Reserva.class, id);
             if (reserva != null) {
-                // Liberar las habitaciones (cambiar estado a DISPONIBLE)
+                // Liberar la habitación (cambiar estado a DISPONIBLE)
                 EstadoHabitacion estadoDisponible = estadoHabitacionDAO.buscarPorEstado(
                         enums.EstadoHabitacion.DISPONIBLE
                 );
 
                 if (estadoDisponible != null) {
-                    for (Habitacion habitacion : reserva.getHabitaciones()) {
-                        RegistroEstadoHabitacion registroActual = habitacion.getEstadoActual();
-                        if (registroActual != null) {
-                            registroActual.setFechaHasta(LocalDate.now());
-                            session.merge(registroActual);
-                        }
+                    Habitacion habitacion = reserva.getHabitacion();
 
-                        RegistroEstadoHabitacion nuevoRegistro = RegistroEstadoHabitacion.builder()
-                                .habitacion(habitacion)
-                                .estado(estadoDisponible)
-                                .fechaDesde(LocalDate.now())
-                                .build();
-
-                        habitacion.getHistorialEstados().add(nuevoRegistro);
-                        session.persist(nuevoRegistro);
+                    RegistroEstadoHabitacion registroActual = habitacion.getEstadoActual();
+                    if (registroActual != null) {
+                        registroActual.setFechaHasta(LocalDate.now());
+                        session.merge(registroActual);
                     }
+
+                    RegistroEstadoHabitacion nuevoRegistro = RegistroEstadoHabitacion.builder()
+                            .habitacion(habitacion)
+                            .estado(estadoDisponible)
+                            .fechaDesde(LocalDate.now())
+                            .build();
+
+                    habitacion.getHistorialEstados().add(nuevoRegistro);
+                    session.persist(nuevoRegistro);
                 }
 
                 session.remove(reserva);

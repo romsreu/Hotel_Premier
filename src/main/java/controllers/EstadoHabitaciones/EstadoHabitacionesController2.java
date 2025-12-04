@@ -4,6 +4,7 @@ import ar.utn.hotel.HotelPremier;
 import ar.utn.hotel.dao.EstadoHabitacionDAO;
 import ar.utn.hotel.dao.impl.EstadoHabitacionDAOImpl;
 import ar.utn.hotel.dao.impl.HabitacionDAOImpl;
+import ar.utn.hotel.dto.HabitacionReservaDTO;
 import ar.utn.hotel.model.Habitacion;
 import ar.utn.hotel.model.RegistroEstadoHabitacion;
 import controllers.PopUp.PopUpController;
@@ -464,10 +465,55 @@ public class EstadoHabitacionesController2 {
     }
 
     private void confirmarReserva() {
+        // 1. Agrupar las celdas seleccionadas por número de habitación
+        Map<Integer, List<LocalDate>> habitacionPorFechas = new HashMap<>();
 
+        for (CeldaSeleccionada celda : celdasSeleccionadas) {
+            habitacionPorFechas.computeIfAbsent(celda.numeroHabitacion, k -> new ArrayList<>())
+                    .add(celda.fecha);
+        }
+
+        // 2. Crear lista de DTOs
+        List<HabitacionReservaDTO> habitacionesDTO = new ArrayList<>();
+
+        for (Map.Entry<Integer, List<LocalDate>> entry : habitacionPorFechas.entrySet()) {
+            Integer numeroHab = entry.getKey();
+            List<LocalDate> fechas = entry.getValue();
+
+            fechas.sort(LocalDate::compareTo);
+            LocalDate fechaIngreso = fechas.get(0);
+            LocalDate fechaEgreso = fechas.get(fechas.size() - 1);
+
+            Habitacion habitacion = todasLasHabitaciones.stream()
+                    .filter(h -> h.getNumero().equals(numeroHab))
+                    .findFirst()
+                    .orElse(null);
+
+            if (habitacion != null) {
+                long cantidadNoches = ChronoUnit.DAYS.between(fechaIngreso, fechaEgreso) + 1;
+                double costoNoche = habitacion.getTipo().getCostoNoche();
+                double costoTotal = cantidadNoches * costoNoche;
+
+                HabitacionReservaDTO dto = HabitacionReservaDTO.builder()
+                        .numeroHabitacion(numeroHab)
+                        .tipoHabitacion(habitacion.getTipo().getDescripcion())
+                        .costoNoche(costoNoche)
+                        .piso(habitacion.getPiso())
+                        .capacidad(habitacion.getTipo().getCapacidad())
+                        .fechaIngreso(fechaIngreso)
+                        .fechaEgreso(fechaEgreso)
+                        .cantidadNoches((int) cantidadNoches)
+                        .costoTotal(costoTotal)
+                        .build();
+
+                habitacionesDTO.add(dto);
+            }
+        }
+
+        habitacionesDTO.sort(Comparator.comparing(HabitacionReservaDTO::getNumeroHabitacion));
+
+        DataTransfer.setHabitacionesSeleccionadas(habitacionesDTO);
         HotelPremier.cambiarA("reservar_hab1");
-        mostrarExito("Reserva confirmada exitosamente");
-
     }
 
     private void confirmarOcupacion() {

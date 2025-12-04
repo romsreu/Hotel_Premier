@@ -1,5 +1,6 @@
 package ar.utn.hotel;
 
+import ar.utn.hotel.services.InicializadorHabitaciones;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -12,6 +13,14 @@ public class  HotelPremier extends Application {
 
     @Override
     public void start(Stage stage) {
+        /*InicializadorHabitaciones inicializador = new InicializadorHabitaciones();
+
+        // Inicializar estructura básica (tipos, estados, habitaciones)
+        inicializador.inicializar();
+
+        // Probar creando reservas de ejemplo
+        inicializador.probarReserva();
+        */
 
         GeorefLoader.cargarTodo();
         precargarEscenas();
