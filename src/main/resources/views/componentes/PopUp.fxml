@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="root" prefWidth="450" prefHeight="250"
+<AnchorPane fx:id="root" prefWidth="450" minHeight="250" maxHeight="600"
             style="-fx-background-radius: 10; -fx-border-radius: 10;"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="controllers.PopUp.PopUpController">
@@ -15,11 +15,14 @@
         <!-- Icono -->
         <Label fx:id="lblIcon" style="-fx-font-size: 48px;" />
 
-        <!-- Mensaje -->
-        <Label fx:id="lblMensaje" wrapText="true" textAlignment="CENTER"
-               style="-fx-font-size: 14px; -fx-padding: 0 10 0 10;"
-               prefWidth="410"
-                 />
+        <!-- Mensaje con ScrollPane para textos largos -->
+        <ScrollPane fitToWidth="true" prefHeight="150" maxHeight="380"
+                    style="-fx-background: transparent; -fx-background-color: transparent;
+                           -fx-border-color: transparent;">
+            <Label fx:id="lblMensaje" wrapText="true" textAlignment="CENTER"
+                   style="-fx-font-size: 14px; -fx-padding: 10;"
+                   prefWidth="390" />
+        </ScrollPane>
 
         <!-- Contenedor de botones -->
         <HBox fx:id="hboxBotones" alignment="CENTER" spacing="15">
@@ -27,13 +30,13 @@
             <Button fx:id="btnCancelar" text="Cancelar"
                     onAction="#cancelar" visible="false" managed="false"
                     style="-fx-background-color: #6c757d; -fx-text-fill: white;
-                           -fx-padding: 10 20; -fx-cursor: hand;" />
+                           -fx-padding: 10 20; -fx-cursor: hand; -fx-font-size: 13px;" />
 
             <!-- Botón principal (Aceptar/Confirmar) -->
             <Button fx:id="btnAceptar" text="Aceptar"
                     onAction="#aceptar"
                     style="-fx-background-color: #28a745; -fx-text-fill: white;
-                           -fx-padding: 10 20; -fx-cursor: hand;" />
+                           -fx-padding: 10 20; -fx-cursor: hand; -fx-font-size: 13px;" />
         </HBox>
     </VBox>
 

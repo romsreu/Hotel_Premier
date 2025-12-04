@@ -185,7 +185,6 @@ public class ReservarHabitacionController2 {
 
         return String.format(
                 "¿Confirmar reserva?\n\n" +
-                        "═══════════════════════════════════\n" +
                         "%s\n" +
                         "Nombre: %s %s\n" +
                         "Teléfono: %s\n\n" +
@@ -193,7 +192,6 @@ public class ReservarHabitacionController2 {
                         "• Habitaciones: %d\n" +
                         "• Total noches: %d\n" +
                         "• Costo total: $%.2f\n" +
-                        "═══════════════════════════════════",
                 estadoPersona,
                 nombre,
                 apellido,

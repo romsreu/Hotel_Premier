@@ -7,6 +7,7 @@ import ar.utn.hotel.dao.impl.HabitacionDAOImpl;
 import ar.utn.hotel.dto.HabitacionReservaDTO;
 import ar.utn.hotel.model.Habitacion;
 import ar.utn.hotel.model.RegistroEstadoHabitacion;
+import ar.utn.hotel.model.Reserva;
 import controllers.PopUp.PopUpController;
 import enums.ContextoEstadoHabitaciones;
 import enums.EstadoHabitacion;
@@ -23,6 +24,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import ar.utn.hotel.dao.impl.PersonaDAOImpl;
+import ar.utn.hotel.dao.impl.ReservaDAOImpl;
+import ar.utn.hotel.dto.ReservaDTO;
 
 public class EstadoHabitacionesController2 {
 
@@ -62,14 +66,20 @@ public class EstadoHabitacionesController2 {
     private LocalDate fechaFin;
     private ContextoEstadoHabitaciones contexto;
     private List<Habitacion> todasLasHabitaciones;
+    private ReservaDAOImpl reservaDAO;
 
     // Para selección múltiple (solo en contextos RESERVAR y OCUPAR)
     private Set<CeldaSeleccionada> celdasSeleccionadas;
+    private CeldaSeleccionada ultimaCeldaClickeada;
+    private Map<String, StackPane> mapaCeldas; // Key: "fecha_numeroHab"
 
     @FXML
     public void initialize() {
+        mapaCeldas = new HashMap<>();
         EstadoHabitacionDAO estadoHabitacionDAO = new EstadoHabitacionDAOImpl();
         habitacionDAO = new HabitacionDAOImpl(estadoHabitacionDAO);
+        PersonaDAOImpl personaDAO = new PersonaDAOImpl();
+        reservaDAO = new ReservaDAOImpl(personaDAO, estadoHabitacionDAO);
         celdasSeleccionadas = new HashSet<>();
 
         // Obtener datos del DataTransfer
@@ -90,6 +100,9 @@ public class EstadoHabitacionesController2 {
         configurarSegunContexto();
         inicializarTabs();
         cargarDatosReales();
+        tabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+            refrescarEstilosSeleccionados();
+        });
     }
 
     private void configurarSegunContexto() {
@@ -313,6 +326,16 @@ public class EstadoHabitacionesController2 {
                 EstadoHabitacion estado = obtenerEstadoHabitacion(hab, fechaActual);
                 StackPane celda = crearCeldaEstado(fechaActual, hab, estado);
                 grid.add(celda, col + 1, fila + 1);
+
+                // Guardar referencia de la celda
+                String clave = generarClaveCelda(fechaActual, hab.getNumero());
+                mapaCeldas.put(clave, celda);
+
+                // Aplicar estilo si ya estaba seleccionada previamente
+                CeldaSeleccionada celdaSel = new CeldaSeleccionada(fechaActual, hab.getNumero(), estado);
+                if (celdasSeleccionadas.contains(celdaSel)) {
+                    aplicarEstiloSeleccionado(celda, estado);
+                }
             }
 
             fechaActual = fechaActual.plusDays(1);
@@ -370,10 +393,19 @@ public class EstadoHabitacionesController2 {
 
         // Configurar interactividad según contexto
         if (contexto != ContextoEstadoHabitaciones.MOSTRAR) {
-            // Solo permitir selección si está disponible
-            if (estado == enums.EstadoHabitacion.DISPONIBLE) {
+            // Determinar si es seleccionable según el contexto
+            boolean esSeleccionable = false;
+
+            if (contexto == ContextoEstadoHabitaciones.RESERVAR) {
+                esSeleccionable = (estado == enums.EstadoHabitacion.DISPONIBLE);
+            } else if (contexto == ContextoEstadoHabitaciones.OCUPAR) {
+                esSeleccionable = (estado == enums.EstadoHabitacion.DISPONIBLE ||
+                        estado == enums.EstadoHabitacion.RESERVADA);
+            }
+
+            if (esSeleccionable) {
                 celda.setCursor(Cursor.HAND);
-                celda.setOnMouseClicked(e -> handleCeldaClickSeleccion(celda, fecha, habitacion, estado));
+                celda.setOnMouseClicked(e -> handleCeldaClickSeleccion(celda, fecha, habitacion, estado, e));
                 celda.setOnMouseEntered(e -> celda.setOpacity(0.8));
                 celda.setOnMouseExited(e -> celda.setOpacity(1.0));
             }
@@ -407,31 +439,18 @@ public class EstadoHabitacionesController2 {
     }
 
     private void handleCeldaClickSeleccion(StackPane celda, LocalDate fecha,
-                                           Habitacion habitacion, enums.EstadoHabitacion estado) {
-        CeldaSeleccionada celdaSel = new CeldaSeleccionada(fecha, habitacion.getNumero());
+                                           Habitacion habitacion, enums.EstadoHabitacion estado,
+                                           javafx.scene.input.MouseEvent event) {
+        CeldaSeleccionada celdaActual = new CeldaSeleccionada(fecha, habitacion.getNumero(), estado);
 
-        if (celdasSeleccionadas.contains(celdaSel)) {
-            // Deseleccionar
-            celdasSeleccionadas.remove(celdaSel);
-            celda.setStyle(String.format(
-                    "-fx-background-color: %s; -fx-border-color: #2d3748; -fx-border-width: 1;",
-                    "#48bb78" // Verde original
-            ));
+        // Shift + Click: Selección por rango (tipo Windows)
+        if (event.isShiftDown() && ultimaCeldaClickeada != null) {
+            seleccionarRango(ultimaCeldaClickeada, celdaActual);
         } else {
-            // Seleccionar
-            if (contexto == ContextoEstadoHabitaciones.OCUPAR && !celdasSeleccionadas.isEmpty()) {
-                mostrarAdvertencia("Solo puede seleccionar una habitación para ocupar");
-                return;
-            }
-
-            celdasSeleccionadas.add(celdaSel);
-            celda.setStyle(String.format(
-                    "-fx-background-color: %s; -fx-border-color: #2d3748; -fx-border-width: 3;",
-                    "#38a169" // Verde más oscuro para selección
-            ));
+            // Click normal: toggle individual
+            toggleSeleccion(celda, celdaActual);
+            ultimaCeldaClickeada = celdaActual;
         }
-
-        System.out.println("Celdas seleccionadas: " + celdasSeleccionadas.size());
     }
 
     @FXML
@@ -517,27 +536,16 @@ public class EstadoHabitacionesController2 {
     }
 
     private void confirmarOcupacion() {
-        CeldaSeleccionada celda = celdasSeleccionadas.iterator().next();
+        // Verificar si hay habitaciones RESERVADAS seleccionadas
+        List<CeldaSeleccionada> celdasReservadas = celdasSeleccionadas.stream()
+                .filter(c -> c.estado == EstadoHabitacion.RESERVADA)
+                .collect(Collectors.toList());
 
-        String mensaje = String.format(
-                "¿Desea confirmar la ocupación?\n\nHabitación: %d\nFecha: %s",
-                celda.numeroHabitacion,
-                celda.fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-        );
-
-        PopUpController.mostrarPopUpConCallback(
-                PopUpType.CONFIRMATION,
-                mensaje,
-                confirmado -> {
-                    if (confirmado) {
-                        // TODO: Aquí llamarías a tu lógica de negocio para ocupar
-                        // Ejemplo: habitacionDAO.ocuparHabitaciones(...)
-
-                        mostrarExito("Ocupación confirmada exitosamente");
-                        HotelPremier.cambiarA("menu");
-                    }
-                }
-        );
+        if (!celdasReservadas.isEmpty()) {
+            mostrarAdvertenciaReservasExistentes(celdasReservadas);
+        } else {
+            procesarOcupacion();
+        }
     }
 
     private void mostrarError(String mensaje) {
@@ -560,10 +568,12 @@ public class EstadoHabitacionesController2 {
     private static class CeldaSeleccionada {
         LocalDate fecha;
         Integer numeroHabitacion;
+        EstadoHabitacion estado;
 
-        CeldaSeleccionada(LocalDate fecha, Integer numeroHabitacion) {
+        CeldaSeleccionada(LocalDate fecha, Integer numeroHabitacion, EstadoHabitacion estado) {
             this.fecha = fecha;
             this.numeroHabitacion = numeroHabitacion;
+            this.estado = estado;
         }
 
         @Override
@@ -578,6 +588,262 @@ public class EstadoHabitacionesController2 {
         @Override
         public int hashCode() {
             return Objects.hash(fecha, numeroHabitacion);
+        }
+    }
+    private String generarClaveCelda(LocalDate fecha, Integer numeroHab) {
+        return fecha.toString() + "_" + numeroHab;
+    }
+    private void toggleSeleccion(StackPane celda, CeldaSeleccionada celdaSel) {
+        if (celdasSeleccionadas.contains(celdaSel)) {
+            // Deseleccionar
+            celdasSeleccionadas.remove(celdaSel);
+            aplicarEstiloDeseleccionado(celda, celdaSel.estado);
+        } else {
+            // Seleccionar
+            celdasSeleccionadas.add(celdaSel);
+            aplicarEstiloSeleccionado(celda, celdaSel.estado);
+        }
+
+        System.out.println("Celdas seleccionadas: " + celdasSeleccionadas.size());
+    }
+
+    private void seleccionarRango(CeldaSeleccionada desde, CeldaSeleccionada hasta) {
+        // Determinar si es rango vertical (misma habitación) u horizontal (mismo día)
+        if (desde.numeroHabitacion.equals(hasta.numeroHabitacion)) {
+            // Rango vertical: misma habitación, diferentes fechas
+            seleccionarRangoVertical(desde, hasta);
+        } else if (desde.fecha.equals(hasta.fecha)) {
+            // Rango horizontal: mismo día, diferentes habitaciones
+            seleccionarRangoHorizontal(desde, hasta);
+
+        } else {
+            // Rango diagonal: no soportado, hacer click simple
+            String clave = generarClaveCelda(hasta.fecha, hasta.numeroHabitacion);
+            StackPane celda = mapaCeldas.get(clave);
+            if (celda != null) {
+                toggleSeleccion(celda, hasta);
+            }
+        }
+    }
+
+    private void seleccionarRangoVertical(CeldaSeleccionada desde, CeldaSeleccionada hasta) {
+        LocalDate fechaInicial = desde.fecha.isBefore(hasta.fecha) ? desde.fecha : hasta.fecha;
+        LocalDate fechaFinal = desde.fecha.isAfter(hasta.fecha) ? desde.fecha : hasta.fecha;
+        Integer numeroHab = desde.numeroHabitacion;
+
+        LocalDate fechaActual = fechaInicial;
+        while (!fechaActual.isAfter(fechaFinal)) {
+            String clave = generarClaveCelda(fechaActual, numeroHab);
+            StackPane celda = mapaCeldas.get(clave);
+
+            if (celda != null) {
+                Habitacion hab = buscarHabitacion(numeroHab);
+                if (hab != null) {
+                    EstadoHabitacion estado = obtenerEstadoHabitacion(hab, fechaActual);
+
+                    boolean esSeleccionable = false;
+                    if (contexto == ContextoEstadoHabitaciones.RESERVAR) {
+                        esSeleccionable = (estado == enums.EstadoHabitacion.DISPONIBLE);
+                    } else if (contexto == ContextoEstadoHabitaciones.OCUPAR) {
+                        esSeleccionable = (estado == enums.EstadoHabitacion.DISPONIBLE ||
+                                estado == enums.EstadoHabitacion.RESERVADA);
+                    }
+
+                    if (esSeleccionable) {
+                        CeldaSeleccionada celdaSel = new CeldaSeleccionada(fechaActual, numeroHab, estado);
+                        if (!celdasSeleccionadas.contains(celdaSel)) {
+                            celdasSeleccionadas.add(celdaSel);
+                            aplicarEstiloSeleccionado(celda, estado);
+                        }
+                    }
+                }
+            }
+
+            fechaActual = fechaActual.plusDays(1);
+        }
+
+        System.out.println("Rango vertical seleccionado: " + celdasSeleccionadas.size() + " celdas");
+    }
+
+    private void seleccionarRangoHorizontal(CeldaSeleccionada desde, CeldaSeleccionada hasta) {
+        Integer habInicial = Math.min(desde.numeroHabitacion, hasta.numeroHabitacion);
+        Integer habFinal = Math.max(desde.numeroHabitacion, hasta.numeroHabitacion);
+        LocalDate fecha = desde.fecha;
+
+        for (Integer numHab = habInicial; numHab <= habFinal; numHab++) {
+            String clave = generarClaveCelda(fecha, numHab);
+            StackPane celda = mapaCeldas.get(clave);
+
+            if (celda != null) {
+                Habitacion hab = buscarHabitacion(numHab);
+                if (hab != null) {
+                    EstadoHabitacion estado = obtenerEstadoHabitacion(hab, fecha);
+
+                    boolean esSeleccionable = false;
+                    if (contexto == ContextoEstadoHabitaciones.RESERVAR) {
+                        esSeleccionable = (estado == enums.EstadoHabitacion.DISPONIBLE);
+                    } else if (contexto == ContextoEstadoHabitaciones.OCUPAR) {
+                        esSeleccionable = (estado == enums.EstadoHabitacion.DISPONIBLE ||
+                                estado == enums.EstadoHabitacion.RESERVADA);
+                    }
+
+                    if (esSeleccionable) {
+                        CeldaSeleccionada celdaSel = new CeldaSeleccionada(fecha, numHab, estado);
+                        if (!celdasSeleccionadas.contains(celdaSel)) {
+                            celdasSeleccionadas.add(celdaSel);
+                            aplicarEstiloSeleccionado(celda, estado);
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.println("Rango horizontal seleccionado: " + celdasSeleccionadas.size() + " celdas");
+    }
+
+    private Habitacion buscarHabitacion(Integer numeroHab) {
+        return todasLasHabitaciones.stream()
+                .filter(h -> h.getNumero().equals(numeroHab))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private void aplicarEstiloSeleccionado(StackPane celda, EstadoHabitacion estado) {
+        String colorSeleccion = switch (estado) {
+            case DISPONIBLE -> "#38a169"; // Verde oscuro
+            case RESERVADA -> "#c53030";  // Rojo oscuro
+            default -> "#38a169";
+        };
+
+        celda.setStyle(String.format(
+                "-fx-background-color: %s; -fx-border-color: #2d3748; -fx-border-width: 3;",
+                colorSeleccion
+        ));
+    }
+
+    private void aplicarEstiloDeseleccionado(StackPane celda, EstadoHabitacion estado) {
+        String colorFondo = switch (estado) {
+            case DISPONIBLE -> "#48bb78";
+            case RESERVADA -> "#f56565";
+            case MANTENIMIENTO -> "#4299e1";
+            case OCUPADA -> "#ed8936";
+        };
+
+        celda.setStyle(String.format(
+                "-fx-background-color: %s; -fx-border-color: #2d3748; -fx-border-width: 1;",
+                colorFondo
+        ));
+    }
+
+    private void mostrarAdvertenciaReservasExistentes(List<CeldaSeleccionada> celdasReservadas) {
+        StringBuilder mensaje = new StringBuilder();
+        mensaje.append("⚠ ADVERTENCIA: Habitaciones con reserva activa\n\n");
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        // Agrupar por habitación para mostrar mejor
+        Map<Integer, List<CeldaSeleccionada>> porHabitacion = celdasReservadas.stream()
+                .collect(Collectors.groupingBy(c -> c.numeroHabitacion));
+
+        for (Map.Entry<Integer, List<CeldaSeleccionada>> entry : porHabitacion.entrySet()) {
+            Integer numHab = entry.getKey();
+            List<CeldaSeleccionada> celdas = entry.getValue();
+
+            // Buscar info de la reserva usando la primera celda
+            Reserva reserva = buscarReservaPorHabitacionYFecha(numHab, celdas.get(0).fecha);
+
+            mensaje.append(String.format("🏨 HABITACIÓN %d\n", numHab));
+
+            if (reserva != null) {
+                mensaje.append(String.format("   Cliente: %s %s\n",
+                        reserva.getPersona().getNombre(),
+                        reserva.getPersona().getApellido()));
+                mensaje.append(String.format("   Reserva: %s - %s\n",
+                        reserva.getFechaInicio().format(formatter),
+                        reserva.getFechaFin().format(formatter)));
+            } else {
+                mensaje.append("   (Reserva no encontrada en sistema)\n");
+            }
+
+            mensaje.append("\n");
+        }
+
+        mensaje.append("¿Desea ocupar las habitaciones de todos modos?");
+
+        PopUpController.mostrarPopUpConCallback(
+                PopUpType.CONFIRMATION,
+                mensaje.toString(),
+                confirmado -> {
+                    if (confirmado) {
+                        procesarOcupacion();
+                    }
+                }
+        );
+    }
+
+    private Reserva buscarReservaPorHabitacionYFecha(Integer numeroHabitacion, LocalDate fecha) {
+        try {
+            List<Reserva> todasReservas = reservaDAO.obtenerTodas();
+
+            return todasReservas.stream()
+                    .filter(r -> r.getHabitacion() != null &&
+                            r.getHabitacion().getNumero().equals(numeroHabitacion))
+                    .filter(r -> !fecha.isBefore(r.getFechaInicio()) &&
+                            !fecha.isAfter(r.getFechaFin()))
+                    .findFirst()
+                    .orElse(null);
+        } catch (Exception e) {
+            System.err.println("Error al buscar reserva: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private void procesarOcupacion() {
+        // TODO: Aquí va la lógica real de ocupar habitaciones
+
+        StringBuilder mensaje = new StringBuilder();
+        mensaje.append("✓ OCUPACIÓN CONFIRMADA EXITOSAMENTE\n\n");
+        mensaje.append(String.format("Total de habitaciones ocupadas: %d\n\n", celdasSeleccionadas.size()));
+
+        // Agrupar por habitación
+        Map<Integer, List<LocalDate>> porHabitacion = new HashMap<>();
+        for (CeldaSeleccionada celda : celdasSeleccionadas) {
+            porHabitacion.computeIfAbsent(celda.numeroHabitacion, k -> new ArrayList<>())
+                    .add(celda.fecha);
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        mensaje.append("DETALLE:\n");
+        for (Map.Entry<Integer, List<LocalDate>> entry : porHabitacion.entrySet()) {
+            List<LocalDate> fechas = entry.getValue();
+            fechas.sort(LocalDate::compareTo);
+            mensaje.append(String.format("• Habitación %d: %s - %s\n",
+                    entry.getKey(),
+                    fechas.get(0).format(formatter),
+                    fechas.get(fechas.size() - 1).format(formatter)));
+        }
+
+        PopUpController.mostrarPopUpConCallback(
+                PopUpType.SUCCESS,
+                mensaje.toString(),
+                confirmado -> {
+                    DataTransfer.limpiar();
+                    HotelPremier.cambiarA("menu");
+                }
+        );
+    }
+    /**
+     * Refresca los estilos visuales de todas las celdas seleccionadas
+     * en todas las grillas actualmente cargadas
+     */
+    private void refrescarEstilosSeleccionados() {
+        for (CeldaSeleccionada celdaSel : celdasSeleccionadas) {
+            String clave = generarClaveCelda(celdaSel.fecha, celdaSel.numeroHabitacion);
+            StackPane celda = mapaCeldas.get(clave);
+
+            if (celda != null) {
+                aplicarEstiloSeleccionado(celda, celdaSel.estado);
+            }
         }
     }
 }
