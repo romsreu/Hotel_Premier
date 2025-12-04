@@ -30,9 +30,11 @@ public class  HotelPremier extends Application {
 
         //probarMetodos();
 
+        GeorefLoader.cargarTodo();
+
         SembrarDatos.sembrar();
 
-        GeorefLoader.cargarTodo();
+
         precargarEscenas();
 
         mainScene = new Scene(SceneManager.getRoot("menu"));
