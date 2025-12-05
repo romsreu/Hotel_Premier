@@ -1,7 +1,7 @@
 package ar.utn.hotel.dao;
 
 import ar.utn.hotel.model.TipoHabitacion;
-import enums.EstadoHabitacion;
+import enums.EstadoHab;
 import ar.utn.hotel.model.Habitacion;
 import java.time.LocalDate;
 import java.util.List;
@@ -19,7 +19,7 @@ public interface HabitacionDAO {
 
     List<Habitacion> buscarPorTipo(TipoHabitacion tipo);
 
-    List<Habitacion> buscarPorEstado(EstadoHabitacion estado);
+    List<Habitacion> buscarPorEstado(EstadoHab estado);
 
     List<Habitacion> buscarDisponibles();
 

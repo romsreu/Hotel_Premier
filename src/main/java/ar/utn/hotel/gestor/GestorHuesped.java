@@ -88,16 +88,9 @@ public class GestorHuesped {
      * Busca huéspedes según criterios
      */
     public List<Huesped> buscarHuesped(BuscarHuespedDTO dto) {
-        if ((dto.getNombre() == null || dto.getNombre().trim().isEmpty()) &&
-                (dto.getApellido() == null || dto.getApellido().trim().isEmpty()) &&
-                (dto.getTipoDocumento() == null || dto.getTipoDocumento().trim().isEmpty()) &&
-                (dto.getNumeroDocumento() == null || dto.getNumeroDocumento().trim().isEmpty())) {
-
-            throw new IllegalArgumentException("Debe proporcionar al menos un criterio de búsqueda");
-        }
-
         return huespedDAO.buscarHuesped(dto);
     }
+
 
     /**
      * Busca huéspedes por nombre y apellido (para ocupar habitación)
@@ -117,6 +110,18 @@ public class GestorHuesped {
         dto.setNombre(nombre);
         dto.setApellido(apellido);
         dto.setNumeroDocumento(numeroDocumento);
+        return buscarHuesped(dto);
+    }
+
+    /**
+     * Busca huéspedes o acompañantes por nombre y apellido
+     * (sin requerir DNI, útil para acompañantes)
+     */
+    public List<Huesped> buscarPersonaPorNombreApellido(String nombre, String apellido) {
+        BuscarHuespedDTO dto = new BuscarHuespedDTO();
+        dto.setNombre(nombre);
+        dto.setApellido(apellido);
+        // No se establece DNI, por lo que busca solo por nombre y apellido
         return buscarHuesped(dto);
     }
 }

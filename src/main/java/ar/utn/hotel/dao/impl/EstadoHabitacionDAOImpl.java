@@ -3,42 +3,40 @@ package ar.utn.hotel.dao.impl;
 import ar.utn.hotel.dao.EstadoHabitacionDAO;
 import ar.utn.hotel.model.EstadoHabitacion;
 import ar.utn.hotel.utils.HibernateUtil;
+import enums.EstadoHab;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import java.time.LocalDate;
 import java.util.List;
 
 public class EstadoHabitacionDAOImpl implements EstadoHabitacionDAO {
 
     @Override
-    public EstadoHabitacion guardar(EstadoHabitacion estado) {
+    public EstadoHabitacion guardar(EstadoHabitacion estadoHabitacion) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            session.persist(estado);
+            session.persist(estadoHabitacion);
             transaction.commit();
-            return estado;
+            return estadoHabitacion;
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw new RuntimeException("Error al guardar estado: " + e.getMessage(), e);
+            throw new RuntimeException("Error al guardar estado habitación: " + e.getMessage(), e);
         }
     }
 
     @Override
     public EstadoHabitacion buscarPorId(Integer id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.get(EstadoHabitacion.class, id);
-        }
-    }
-
-    @Override
-    public EstadoHabitacion buscarPorEstado(enums.EstadoHabitacion estado) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
-                            "FROM EstadoHabitacion e WHERE e.estado = :estado",
+                            "SELECT eh FROM EstadoHabitacion eh " +
+                                    "LEFT JOIN FETCH eh.tipoEstado " +
+                                    "LEFT JOIN FETCH eh.habitacion " +
+                                    "WHERE eh.id = :id",
                             EstadoHabitacion.class)
-                    .setParameter("estado", estado)
+                    .setParameter("id", id)
                     .uniqueResult();
         }
     }
@@ -47,24 +45,109 @@ public class EstadoHabitacionDAOImpl implements EstadoHabitacionDAO {
     public List<EstadoHabitacion> listarTodos() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery(
-                            "FROM EstadoHabitacion e ORDER BY e.estado",
+                            "SELECT eh FROM EstadoHabitacion eh " +
+                                    "LEFT JOIN FETCH eh.tipoEstado " +
+                                    "LEFT JOIN FETCH eh.habitacion " +
+                                    "ORDER BY eh.habitacion.numero, eh.fechaDesde DESC",
                             EstadoHabitacion.class)
                     .getResultList();
         }
     }
 
     @Override
-    public void actualizar(EstadoHabitacion estado) {
+    public List<EstadoHabitacion> listarPorHabitacion(Integer numeroHabitacion) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                            "SELECT eh FROM EstadoHabitacion eh " +
+                                    "LEFT JOIN FETCH eh.tipoEstado " +
+                                    "WHERE eh.habitacion.numero = :numero " +
+                                    "ORDER BY eh.fechaDesde DESC",
+                            EstadoHabitacion.class)
+                    .setParameter("numero", numeroHabitacion)
+                    .getResultList();
+        }
+    }
+
+    @Override
+    public List<EstadoHabitacion> listarActivos() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                            "SELECT eh FROM EstadoHabitacion eh " +
+                                    "LEFT JOIN FETCH eh.tipoEstado " +
+                                    "LEFT JOIN FETCH eh.habitacion " +
+                                    "WHERE eh.fechaHasta IS NULL OR eh.fechaHasta >= :hoy " +
+                                    "ORDER BY eh.habitacion.numero",
+                            EstadoHabitacion.class)
+                    .setParameter("hoy", LocalDate.now())
+                    .getResultList();
+        }
+    }
+
+    @Override
+    public List<EstadoHabitacion> listarPorTipoEstado(EstadoHab estado) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                            "SELECT eh FROM EstadoHabitacion eh " +
+                                    "LEFT JOIN FETCH eh.tipoEstado te " +
+                                    "LEFT JOIN FETCH eh.habitacion " +
+                                    "WHERE te.estado = :estado " +
+                                    "AND (eh.fechaHasta IS NULL OR eh.fechaHasta >= :hoy) " +
+                                    "ORDER BY eh.habitacion.numero",
+                            EstadoHabitacion.class)
+                    .setParameter("estado", estado)
+                    .setParameter("hoy", LocalDate.now())
+                    .getResultList();
+        }
+    }
+
+    @Override
+    public EstadoHabitacion obtenerEstadoActual(Integer numeroHabitacion) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                            "SELECT eh FROM EstadoHabitacion eh " +
+                                    "LEFT JOIN FETCH eh.tipoEstado " +
+                                    "WHERE eh.habitacion.numero = :numero " +
+                                    "AND eh.fechaDesde <= :hoy " +
+                                    "AND (eh.fechaHasta IS NULL OR eh.fechaHasta >= :hoy) " +
+                                    "ORDER BY eh.fechaDesde DESC",
+                            EstadoHabitacion.class)
+                    .setParameter("numero", numeroHabitacion)
+                    .setParameter("hoy", LocalDate.now())
+                    .setMaxResults(1)
+                    .uniqueResult();
+        }
+    }
+
+    @Override
+    public EstadoHabitacion obtenerEstadoEn(Integer numeroHabitacion, LocalDate fecha) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                            "SELECT eh FROM EstadoHabitacion eh " +
+                                    "LEFT JOIN FETCH eh.tipoEstado " +
+                                    "WHERE eh.habitacion.numero = :numero " +
+                                    "AND eh.fechaDesde <= :fecha " +
+                                    "AND (eh.fechaHasta IS NULL OR eh.fechaHasta >= :fecha) " +
+                                    "ORDER BY eh.fechaDesde DESC",
+                            EstadoHabitacion.class)
+                    .setParameter("numero", numeroHabitacion)
+                    .setParameter("fecha", fecha)
+                    .setMaxResults(1)
+                    .uniqueResult();
+        }
+    }
+
+    @Override
+    public void actualizar(EstadoHabitacion estadoHabitacion) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            session.merge(estado);
+            session.merge(estadoHabitacion);
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw new RuntimeException("Error al actualizar estado: " + e.getMessage(), e);
+            throw new RuntimeException("Error al actualizar estado habitación: " + e.getMessage(), e);
         }
     }
 
@@ -73,28 +156,16 @@ public class EstadoHabitacionDAOImpl implements EstadoHabitacionDAO {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            EstadoHabitacion estado = session.get(EstadoHabitacion.class, id);
-            if (estado != null) {
-                session.remove(estado);
+            EstadoHabitacion estadoHabitacion = session.get(EstadoHabitacion.class, id);
+            if (estadoHabitacion != null) {
+                session.remove(estadoHabitacion);
             }
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
             }
-            throw new RuntimeException("Error al eliminar estado: " + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public boolean existeEstado(enums.EstadoHabitacion estado) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Long count = session.createQuery(
-                            "SELECT COUNT(e) FROM EstadoHabitacion e WHERE e.estado = :estado",
-                            Long.class)
-                    .setParameter("estado", estado)
-                    .uniqueResult();
-            return count != null && count > 0;
+            throw new RuntimeException("Error al eliminar estado habitación: " + e.getMessage(), e);
         }
     }
 }

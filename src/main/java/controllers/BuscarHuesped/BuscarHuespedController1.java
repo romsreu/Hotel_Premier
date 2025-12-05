@@ -27,8 +27,6 @@ public class BuscarHuespedController1 {
         configurarFormatoDeTexto();
     }
 
-    // ==================== CONFIGURACIÓN INICIAL ====================
-
     private void configurarFormatoDeTexto() {
         aplicarMayusculas(txtNombre, txtApellido);
         aplicarMascaras();
@@ -50,11 +48,8 @@ public class BuscarHuespedController1 {
         soloNumeros(txtNumeroDocumento);
     }
 
-    // ==================== EVENTOS DE BOTONES ====================
-
     @FXML
     private void onBuscarClicked() {
-        // Validar que al menos un campo esté completo
         if (!tieneAlgunCampoLleno()) {
             PopUpController.mostrarPopUp(
                     PopUpType.WARNING,
@@ -72,22 +67,22 @@ public class BuscarHuespedController1 {
         HotelPremier.cambiarA("menu");
     }
 
-    // ==================== LÓGICA DE DATOS ====================
-
     private boolean tieneAlgunCampoLleno() {
-        boolean nombreLleno = txtNombre.getText() != null && !txtNombre.getText().trim().isEmpty();
-        boolean apellidoLleno = txtApellido.getText() != null && !txtApellido.getText().trim().isEmpty();
-        boolean documentoLleno = txtNumeroDocumento.getText() != null && !txtNumeroDocumento.getText().trim().isEmpty();
-
-        return nombreLleno || apellidoLleno || documentoLleno;
+        return (txtNombre.getText() != null && !txtNombre.getText().trim().isEmpty()) ||
+                (txtApellido.getText() != null && !txtApellido.getText().trim().isEmpty()) ||
+                (txtNumeroDocumento.getText() != null && !txtNumeroDocumento.getText().trim().isEmpty());
     }
 
     private BuscarHuespedDTO crearDTODesdeFormulario() {
         BuscarHuespedDTO dto = new BuscarHuespedDTO();
 
-        dto.setNombre(txtNombre.getText().trim());
-        dto.setApellido(txtApellido.getText().trim());
-        dto.setNumeroDocumento(txtNumeroDocumento.getText().trim());
+        String nombre = txtNombre.getText();
+        String apellido = txtApellido.getText();
+        String numeroDocumento = txtNumeroDocumento.getText();
+
+        dto.setNombre((nombre != null && !nombre.trim().isEmpty()) ? nombre.trim() : null);
+        dto.setApellido((apellido != null && !apellido.trim().isEmpty()) ? apellido.trim() : null);
+        dto.setNumeroDocumento((numeroDocumento != null && !numeroDocumento.trim().isEmpty()) ? numeroDocumento.trim() : null);
 
         return dto;
     }
@@ -106,26 +101,21 @@ public class BuscarHuespedController1 {
             }
 
             DataTransfer.setHuespedesEnBusqueda(resultados);
-            System.out.printf("pantalla1", resultados);
             HotelPremier.cambiarA("buscar_huesped2");
             mostrarPopUpExito(resultados.size());
 
-        } catch (IllegalArgumentException e) {
-            PopUpController.mostrarPopUp(
-                    PopUpType.WARNING,
-                    "Ningún huésped se ajusta a los criterios de búsqueda"
-            );
         } catch (Exception e) {
-            PopUpController.mostrarPopUp(PopUpType.ERROR, "Error al buscar huésped: " + e.getMessage());
+            PopUpController.mostrarPopUp(
+                    PopUpType.ERROR,
+                    "Error al buscar huésped: " + e.getMessage()
+            );
         }
     }
 
     private void mostrarPopUpExito(int cantidad) {
-        String mensaje = String.format(
-                "Se encontraron %d huésped(es)",
-                cantidad
+        PopUpController.mostrarPopUp(
+                PopUpType.SUCCESS,
+                String.format("Se encontraron %d huésped(es)", cantidad)
         );
-        PopUpController.mostrarPopUp(PopUpType.SUCCESS, mensaje);
     }
-
 }

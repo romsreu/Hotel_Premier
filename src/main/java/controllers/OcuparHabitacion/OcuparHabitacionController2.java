@@ -2,8 +2,11 @@ package controllers.OcuparHabitacion;
 
 import ar.utn.hotel.HotelPremier;
 import ar.utn.hotel.dto.HabitacionReservaDTO;
-import ar.utn.hotel.gestor.GestorOcupacion;
+import ar.utn.hotel.gestor.GestorHabitacion;
+import ar.utn.hotel.gestor.GestorReserva;
 import ar.utn.hotel.model.Huesped;
+import ar.utn.hotel.model.Reserva;
+import ar.utn.hotel.dao.ReservaDAO;
 import controllers.PopUp.PopUpController;
 import enums.PopUpType;
 import javafx.event.ActionEvent;
@@ -17,7 +20,7 @@ import javafx.scene.Cursor;
 import utils.DataTransfer;
 
 import java.time.format.DateTimeFormatter;
-import java.util.List;
+import java.util.*;
 
 public class OcuparHabitacionController2 {
 
@@ -25,15 +28,21 @@ public class OcuparHabitacionController2 {
     @FXML private Button btnCancelar;
     @FXML private Button btnAceptar;
 
-    private GestorOcupacion gestorOcupacion;
+    private GestorHabitacion gestorHabitacion;
+    private GestorReserva gestorReserva;
     private List<Huesped> huespedesEncontrados;
     private Huesped huespedSeleccionado;
     private List<HabitacionReservaDTO> habitacionesSeleccionadas;
 
     @FXML
     public void initialize() {
-        // Inicializar gestor
-        gestorOcupacion = new GestorOcupacion();
+        // Inicializar gestores
+        gestorHabitacion = new GestorHabitacion();
+        gestorReserva = new GestorReserva();
+
+        // Establecer referencias circulares
+        gestorReserva.setGestorHabitacion(gestorHabitacion);
+        gestorHabitacion.setGestorReserva(gestorReserva);
 
         // Obtener datos del DataTransfer
         huespedesEncontrados = DataTransfer.getHuespedesEnBusqueda();
@@ -188,8 +197,41 @@ public class OcuparHabitacionController2 {
 
     private void procesarOcupacion() {
         try {
-            // Usar el gestor para ocupar habitaciones
-            gestorOcupacion.ocuparHabitaciones(huespedSeleccionado, habitacionesSeleccionadas);
+            // Por cada habitación seleccionada, procesar la ocupación
+            for (HabitacionReservaDTO hab : habitacionesSeleccionadas) {
+                // 1. Buscar si existe una reserva para esta habitación en estas fechas
+                Reserva reserva = gestorReserva.buscarReservaPorHabitacionYFecha(
+                        hab.getNumeroHabitacion(),
+                        hab.getFechaIngreso()
+                );
+
+                if (reserva == null) {
+                    // NO existe reserva: Crear reserva primero
+                    Map<Integer, ReservaDAO.RangoFechas> habitacionConFechas = new HashMap<>();
+                    habitacionConFechas.put(
+                            hab.getNumeroHabitacion(),
+                            new ReservaDAO.RangoFechas(hab.getFechaIngreso(), hab.getFechaEgreso())
+                    );
+
+                    // Crear la reserva
+                    gestorReserva.crearReservasConFechasEspecificas(
+                            huespedSeleccionado.getNombre(),
+                            huespedSeleccionado.getApellido(),
+                            habitacionConFechas
+                    );
+
+                    // Obtener la reserva recién creada
+                    reserva = gestorReserva.buscarReservaPorHabitacionYFecha(
+                            hab.getNumeroHabitacion(),
+                            hab.getFechaIngreso()
+                    );
+                }
+
+                // 2. Crear la estadía (hacer check-in)
+                if (reserva != null) {
+                    gestorHabitacion.realizarCheckIn(reserva.getId());
+                }
+            }
 
             mostrarExito();
 

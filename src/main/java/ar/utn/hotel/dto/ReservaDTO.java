@@ -10,7 +10,6 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 public class ReservaDTO {
-
     private Long id;
     private Long idPersona;
     private String nombrePersona;
@@ -19,18 +18,7 @@ public class ReservaDTO {
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     private Set<Integer> numerosHabitaciones;
-
-    @Override
-    public String toString() {
-        return "ReservaDTO{" +
-                "id=" + id +
-                ", idPersona=" + idPersona +
-                ", nombrePersona='" + nombrePersona + '\'' +
-                ", apellidoPersona='" + apellidoPersona + '\'' +
-                ", telefonoPersona='" + telefonoPersona + '\'' +
-                ", fechaInicio=" + fechaInicio +
-                ", fechaFin=" + fechaFin +
-                ", numerosHabitaciones=" + numerosHabitaciones +
-                '}';
-    }
+    private Integer cantHuespedes;
+    private Double descuento;
+    private Boolean tieneEstadia; // Indica si la reserva ya se convirtió en estadía
 }

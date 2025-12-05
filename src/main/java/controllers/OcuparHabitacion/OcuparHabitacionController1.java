@@ -54,7 +54,6 @@ public class OcuparHabitacionController1 {
         soloLetras(tfNombre, tfApellido);
         soloNumeros(tfNumeroDocumento);
         limitarCaracteres(15, tfNombre, tfApellido);
-        limitarCaracteres(8, tfNumeroDocumento);
         aplicarMascaraDNI(tfNumeroDocumento);
     }
 
@@ -108,14 +107,33 @@ public class OcuparHabitacionController1 {
 
         if (rbHuesped.isSelected()) {
             buscarHuespedes(nombre, apellido);
-        } else {
-            // Por ahora solo soportamos huéspedes
-            // TODO: Implementar búsqueda de acompañantes si es necesario
+        } else if (rbAcompanante.isSelected()) {
+            buscarAcompanantes(nombre, apellido);
+        }
+    }
+    private void buscarAcompanantes(String nombre, String apellido) {
+        try {
+            // Los acompañantes no requieren DNI, solo nombre y apellido
+            List<Huesped> personas = gestorHuesped.buscarPersonaPorNombreApellido(nombre, apellido);
+
+            if (personas == null || personas.isEmpty()) {
+                PopUpController.mostrarPopUp(
+                        PopUpType.WARNING,
+                        "No se encontraron personas con esos datos"
+                );
+                return;
+            }
+
+            // Guardar resultados y pasar a la siguiente pantalla
+            DataTransfer.setHuespedesEnBusqueda(personas);
+            HotelPremier.cambiarA("ocupar_hab2");
+
+        } catch (Exception e) {
             PopUpController.mostrarPopUp(
-                    PopUpType.WARNING,
-                    "Funcionalidad de acompañantes en desarrollo.\n" +
-                            "Por favor, busque un huésped registrado."
+                    PopUpType.ERROR,
+                    "Error al buscar personas:\n" + e.getMessage()
             );
+            e.printStackTrace();
         }
     }
 

@@ -50,8 +50,8 @@ public class ReservarHabitacionController2 {
         // Inicializar DAOs y gestor
         personaDAO = new PersonaDAOImpl();
         EstadoHabitacionDAOImpl estadoDAO = new EstadoHabitacionDAOImpl();
-        ReservaDAO reservaDAO = new ReservaDAOImpl(personaDAO, estadoDAO);
-        gestorReserva = new GestorReserva(reservaDAO, personaDAO);
+        //ReservaDAO reservaDAO = new ReservaDAOImpl(personaDAO, estadoDAO);
+        //gestorReserva = new GestorReserva(reservaDAO, personaDAO);
 
         // Obtener habitaciones seleccionadas
         habitacionesSeleccionadas = DataTransfer.getHabitacionesSeleccionadas();
@@ -111,7 +111,7 @@ public class ReservarHabitacionController2 {
                 confirmado -> {
                     if (confirmado) {
                         DataTransfer.limpiar();
-                        HotelPremier.cambiarA("menu");
+                       // HotelPremier.cambiarA("menu");
                     }
                 }
         );
@@ -185,21 +185,22 @@ public class ReservarHabitacionController2 {
 
         return String.format(
                 "¿Confirmar reserva?\n\n" +
-                        "%s\n" +
                         "Nombre: %s %s\n" +
                         "Teléfono: %s\n\n" +
                         "RESUMEN DE RESERVA:\n" +
                         "• Habitaciones: %d\n" +
                         "• Total noches: %d\n" +
                         "• Costo total: $%.2f\n" +
-                estadoPersona,
+                        "%s",
                 nombre,
                 apellido,
                 telefono.isEmpty() ? "No especificado" : telefono,
                 habitacionesSeleccionadas.size(),
                 totalNoches,
-                costoTotal
+                costoTotal,
+                estadoPersona
         );
+
     }
 
     private void procesarReserva(String nombre, String apellido, String telefono, boolean existe) {

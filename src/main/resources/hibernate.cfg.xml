@@ -34,10 +34,10 @@
         <mapping class="ar.utn.hotel.model.Direccion"/>
         <mapping class="ar.utn.hotel.model.Huesped"/>
         <mapping class="ar.utn.hotel.model.Habitacion"/>
+        <mapping class="ar.utn.hotel.model.TipoHabitacion"/>
         <mapping class="ar.utn.hotel.model.Reserva"/>
-        <mapping class="ar.utn.hotel.model.TipoHabitacion"/>
-        <mapping class="ar.utn.hotel.model.RegistroEstadoHabitacion"/>
-        <mapping class="ar.utn.hotel.model.TipoHabitacion"/>
+        <mapping class="ar.utn.hotel.model.Estadia"/>
         <mapping class="ar.utn.hotel.model.EstadoHabitacion"/>
+        <mapping class="ar.utn.hotel.model.TipoEstado"/>
     </session-factory>
 </hibernate-configuration>

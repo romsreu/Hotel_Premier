@@ -2,12 +2,12 @@ package ar.utn.hotel.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "reserva")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -22,7 +22,7 @@ public class Reserva {
     private Persona persona;
 
     @ManyToOne
-    @JoinColumn(name = "habitacion_numero", nullable = false)
+    @JoinColumn(name = "numero_habitacion", nullable = false)
     private Habitacion habitacion;
 
     @Column(name = "fecha_inicio", nullable = false)
@@ -30,4 +30,13 @@ public class Reserva {
 
     @Column(name = "fecha_fin", nullable = false)
     private LocalDate fechaFin;
+
+    @Column(name = "cant_huespedes", nullable = false)
+    private Integer cantHuespedes;
+
+    @Column(name = "descuento")
+    private Double descuento;
+
+    @OneToOne(mappedBy = "reserva")
+    private Estadia estadia;
 }

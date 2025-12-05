@@ -2,14 +2,14 @@ package ar.utn.hotel.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "habitacion")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -28,29 +28,31 @@ public class Habitacion {
 
     @OneToMany(mappedBy = "habitacion", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private Set<RegistroEstadoHabitacion> historialEstados = new HashSet<>();
+    private Set<EstadoHabitacion> estados = new HashSet<>();
 
     @OneToMany(mappedBy = "habitacion")
     @Builder.Default
     private Set<Reserva> reservas = new HashSet<>();
+
+    @OneToMany(mappedBy = "habitacion")
+    @Builder.Default
+    private Set<Estadia> estadias = new HashSet<>();
 
     // Métodos helper
     public Double getCostoNoche() {
         return tipo != null ? tipo.getCostoNoche() : 0.0;
     }
 
-    public RegistroEstadoHabitacion getEstadoActual() {
-        return historialEstados.stream()
-                .filter(r -> r.getFechaHasta() == null ||
-                        !r.getFechaHasta().isBefore(LocalDate.now()))
+    public EstadoHabitacion getEstadoActual() {
+        return estados.stream()
+                .filter(EstadoHabitacion::isActivo)
                 .findFirst()
                 .orElse(null);
     }
 
-    public RegistroEstadoHabitacion getEstadoEn(LocalDate fecha) {
-        return historialEstados.stream()
-                .filter(r -> !r.getFechaDesde().isAfter(fecha) &&
-                        (r.getFechaHasta() == null || !r.getFechaHasta().isBefore(fecha)))
+    public EstadoHabitacion getEstadoEn(LocalDate fecha) {
+        return estados.stream()
+                .filter(e -> e.isVigenteEn(fecha))
                 .findFirst()
                 .orElse(null);
     }

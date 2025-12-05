@@ -15,5 +15,5 @@ public class HabitacionDTO {
     private Integer piso;
     private Integer capacidad;
     private String descripcion;
-//    private String estado;
+    private String estadoActual; // DISPONIBLE, OCUPADA, RESERVADA, MANTENIMIENTO
 }
