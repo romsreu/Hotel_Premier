@@ -180,8 +180,8 @@ public class EstadoHabitacionesController2 {
 
         // Ahora cargar las grillas (ya no hacen consultas individuales)
         cargarGrilla(gridTodasHabitaciones, fechaInicio, fechaFin, todasLasHabitaciones);
-        cargarGrillaPorTipo(gridIndividualEstandar, TipoHabitacion.INDIVIDUAL_ESTANDAR);
-        cargarGrillaPorTipo(gridDobleEstandar, TipoHabitacion.DOBLE_ESTANDAR);
+        cargarGrillaPorTipo(gridIndividualEstandar, TipoHabitacion.INDIVIDUAL_ESTÁNDAR);
+        cargarGrillaPorTipo(gridDobleEstandar, TipoHabitacion.DOBLE_ESTÁNDAR);
         cargarGrillaPorTipo(gridDobleSuperior, TipoHabitacion.DOBLE_SUPERIOR);
         cargarGrillaPorTipo(gridSuperiorFamily, TipoHabitacion.SUPERIOR_FAMILY_PLAN);
         cargarGrillaPorTipo(gridSuiteDoble, TipoHabitacion.SUITE_DOBLE);
