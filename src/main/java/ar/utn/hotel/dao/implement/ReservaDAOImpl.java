@@ -23,17 +23,22 @@ public class ReservaDAOImpl implements ReservaDAO {
     @Override
     public Reserva crearReserva(CrearReservaDTO dto) {
         Transaction transaction = null;
+        Session session = null;
 
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try {
+            // 1. Abrimos la sesión manualmente
+            session = HibernateUtil.getSessionFactory().openSession();
             transaction = session.beginTransaction();
 
-            // Verificar que el huésped existe
+            // --- VALIDACIONES ---
+
+            // A. Verificar Huesped
             Huesped huesped = session.get(Huesped.class, dto.getIdHuesped());
             if (huesped == null) {
                 throw new RuntimeException("Error: El huésped no se encuentra registrado en el sistema.");
             }
 
-            // Obtener la habitación
+            // B. Obtener Habitación
             Habitacion habitacion = session.createQuery(
                             "SELECT DISTINCT h FROM Habitacion h " +
                                     "LEFT JOIN FETCH h.estados " +
@@ -46,28 +51,37 @@ public class ReservaDAOImpl implements ReservaDAO {
                 throw new IllegalArgumentException("La habitación número " + dto.getNumeroHabitacion() + " no existe");
             }
 
-            // Obtener el tipo estado RESERVADA
+            // C. Obtener Tipo Estado
             TipoEstado tipoReservada = tipoEstadoDAO.buscarPorEstado(EstadoHab.RESERVADA);
             if (tipoReservada == null) {
                 throw new IllegalStateException("No existe el tipo estado RESERVADA en el catálogo");
             }
 
-            // Verificar disponibilidad
-            EstadoHabitacion estadoActual = habitacion.getEstadoActual();
-            if (estadoActual != null && estadoActual.getTipoEstado().getEstado() != EstadoHab.DISPONIBLE) {
+            // D. NUEVA VALIDACIÓN: Verificar solapamiento de fechas
+            // Consultamos si existe alguna reserva para esta habitación que choque con las fechas solicitadas
+            Long coincidencias = session.createQuery(
+                            "SELECT COUNT(r) FROM Reserva r " +
+                                    "WHERE r.habitacion.id = :idHabitacion " +
+                                    "AND r.fechaInicio < :nuevaFechaFin " +  // Lógica de intersección de fechas
+                                    "AND r.fechaFin > :nuevaFechaInicio",     // Lógica de intersección de fechas
+                            Long.class)
+                    .setParameter("idHabitacion", habitacion.getNumero())
+                    .setParameter("nuevaFechaInicio", dto.getFechaInicio())
+                    .setParameter("nuevaFechaFin", dto.getFechaFin())
+                    .uniqueResult();
+
+            if (coincidencias > 0) {
                 throw new IllegalStateException(
-                        "La habitación número " + dto.getNumeroHabitacion() + " no está disponible. " +
-                                "Estado actual: " + estadoActual.getTipoEstado().getEstado()
+                        "La habitación " + dto.getNumeroHabitacion() +
+                                " ya se encuentra reservada en el rango de fechas seleccionado."
                 );
             }
 
-            // Cerrar el estado actual
-            if (estadoActual != null) {
-                estadoActual.setFechaHasta(dto.getFechaInicio().minusDays(1));
-                session.merge(estadoActual);
-            }
+            // --- PERSISTENCIA ---
 
-            // Crear nuevo estado RESERVADA
+            // 1. Crear el registro en EstadosHabitaciones (Historial)
+            // NOTA: No modificamos el "estado actual" anterior para no romper la disponibilidad de hoy
+            // si la reserva es a futuro. Solo insertamos el nuevo período ocupado.
             EstadoHabitacion nuevoEstado = EstadoHabitacion.builder()
                     .habitacion(habitacion)
                     .tipoEstado(tipoReservada)
@@ -78,7 +92,7 @@ public class ReservaDAOImpl implements ReservaDAO {
             habitacion.getEstados().add(nuevoEstado);
             session.persist(nuevoEstado);
 
-            // Crear la reserva
+            // 2. Crear la Reserva
             Reserva reserva = Reserva.builder()
                     .huesped(huesped)
                     .habitacion(habitacion)
@@ -89,15 +103,22 @@ public class ReservaDAOImpl implements ReservaDAO {
                     .build();
 
             session.persist(reserva);
-            transaction.commit();
 
+            transaction.commit();
             return reserva;
 
         } catch (Exception e) {
-            if (transaction != null) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
+            // Imprimimos el error para debug
+            System.err.println("ERROR EN DAO CREAR RESERVA: " + e.getMessage());
+            e.printStackTrace();
             throw new RuntimeException("Error al crear reserva: " + e.getMessage(), e);
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
     }
 
@@ -197,18 +218,13 @@ public class ReservaDAOImpl implements ReservaDAO {
 
             Reserva reserva = session.get(Reserva.class, id);
             if (reserva != null) {
-                // Liberar la habitación (cambiar estado a DISPONIBLE)
+                // Al eliminar reserva, liberamos el historial de estado asociado a "hoy" si corresponde
                 TipoEstado tipoDisponible = tipoEstadoDAO.buscarPorEstado(EstadoHab.DISPONIBLE);
 
                 if (tipoDisponible != null) {
                     Habitacion habitacion = reserva.getHabitacion();
 
-                    EstadoHabitacion estadoActual = habitacion.getEstadoActual();
-                    if (estadoActual != null) {
-                        estadoActual.setFechaHasta(LocalDate.now());
-                        session.merge(estadoActual);
-                    }
-
+                    // Lógica simplificada para volver a disponible
                     EstadoHabitacion nuevoEstado = EstadoHabitacion.builder()
                             .habitacion(habitacion)
                             .tipoEstado(tipoDisponible)
