@@ -39,24 +39,19 @@ public class EstadoHabitacionesController1 {
         LocalDate fechaActual = LocalDate.now();
         LocalDate fechaMaxima = fechaActual.plusYears(1);
 
-        // Configurar valores iniciales
         dpFechaDesde.setValue(fechaActual);
         dpFechaHasta.setValue(fechaActual);
 
-        // Configurar restricciones para dpFechaDesde
         bloquearFechasInvalidasDesde(fechaActual, fechaMaxima);
-
-        // Configurar restricciones para dpFechaHasta
         bloquearFechasInvalidasHasta(fechaActual, fechaMaxima);
 
-        // Agregar listeners para sincronizar las fechas
         dpFechaDesde.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && dpFechaHasta.getValue() != null) {
                 if (newVal.isAfter(dpFechaHasta.getValue())) {
                     dpFechaHasta.setValue(newVal);
                 }
             }
-            // Reconfigurar restricciones de dpFechaHasta
+
             bloquearFechasInvalidasHasta(fechaActual, fechaMaxima);
         });
 
@@ -66,7 +61,7 @@ public class EstadoHabitacionesController1 {
                     dpFechaDesde.setValue(newVal);
                 }
             }
-            // Reconfigurar restricciones de dpFechaDesde
+
             bloquearFechasInvalidasDesde(fechaActual, fechaMaxima);
         });
     }
@@ -78,10 +73,6 @@ public class EstadoHabitacionesController1 {
                 super.updateItem(date, empty);
                 LocalDate fechaHasta = dpFechaHasta.getValue();
 
-                // Deshabilitar si:
-                // - La fecha es anterior a hoy
-                // - La fecha es posterior a un año desde hoy
-                // - La fecha es posterior a fechaHasta (si está definida)
                 boolean debeDeshabilitarse = empty ||
                         date.isBefore(fechaMinima) ||
                         date.isAfter(fechaMaxima) ||
@@ -98,11 +89,6 @@ public class EstadoHabitacionesController1 {
             public void updateItem(LocalDate date, boolean empty) {
                 super.updateItem(date, empty);
                 LocalDate fechaDesde = dpFechaDesde.getValue();
-
-                // Deshabilitar si:
-                // - La fecha es anterior a hoy
-                // - La fecha es posterior a un año desde hoy
-                // - La fecha es anterior a fechaDesde (si está definida)
                 boolean debeDeshabilitarse = empty ||
                         date.isBefore(fechaMinima) ||
                         date.isAfter(fechaMaxima) ||
